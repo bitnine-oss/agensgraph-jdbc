@@ -1,0 +1,729 @@
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/*
+ * Borrowed from PostgreSQL JDBC driver
+ */
+
+package net.bitnine.agensgraph;
+
+import org.postgresql.PGProperty;
+import org.postgresql.core.Logger;
+import org.postgresql.util.GT;
+import org.postgresql.util.HostSpec;
+import org.postgresql.util.PSQLException;
+import org.postgresql.util.PSQLState;
+import org.postgresql.util.SharedTimer;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.security.AccessControlException;
+import java.security.AccessController;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.DriverPropertyInfo;
+import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.Properties;
+
+/**
+ * The Java SQL framework allows for multiple database drivers.  Each
+ * driver should supply a class that implements the Driver interface
+ * <p/>
+ * <p>The DriverManager will try to load as many drivers as it can find and
+ * then for any given connection request, it will ask each driver in turn
+ * to try to connect to the target URL.
+ * <p/>
+ * <p>It is strongly recommended that each Driver class should be small and
+ * standalone so that the Driver class can be loaded and queried without
+ * bringing in vast quantities of supporting code.
+ * <p/>
+ * <p>When a Driver class is loaded, it should create an instance of itself
+ * and register it with the DriverManager. This means that a user can load
+ * and register a driver by doing Class.forName("foo.bah.Driver")
+ *
+ * @see org.postgresql.PGConnection
+ * @see java.sql.Driver
+ */
+public final class Driver implements java.sql.Driver {
+    // make these public so they can be used in setLogLevel below
+    public static final int DEBUG = 2;
+    public static final int INFO = 1;
+    public static final int OFF = 0;
+
+    private static Driver registeredDriver;
+    private static final Logger LOGGER = new Logger();
+    private static boolean logLevelSet;
+    private static SharedTimer sharedTimer = new SharedTimer(LOGGER);
+
+    static {
+        try {
+            // moved the registerDriver from the constructor to here
+            // because some clients call the driver themselves (I know, as
+            // my early jdbc work did - and that was based on other examples).
+            // Placing it here, means that the driver is registered once only.
+            register();
+        } catch (SQLException e) {
+            throw new ExceptionInInitializerError(e);
+        }
+    }
+
+    // Helper to retrieve default properties from classloader resource
+    // properties files.
+    private Properties defaultProperties;
+
+    private synchronized Properties getDefaultProperties() throws IOException {
+        if (defaultProperties != null)
+            return defaultProperties;
+
+        // Make sure we load properties with the maximum possible
+        // privileges.
+        try {
+            defaultProperties = (Properties) AccessController.doPrivileged(
+                    new PrivilegedExceptionAction() {
+                        public Object run() throws IOException {
+                            return loadDefaultProperties();
+                        }
+                    });
+        } catch (PrivilegedActionException e) {
+            throw (IOException) e.getException();
+        }
+
+        // Use the loglevel from the default properties (if any)
+        // as the driver-wide default unless someone explicitly called
+        // setLogLevel() already.
+        synchronized (Driver.class) {
+            if (!logLevelSet) {
+                String driverLogLevel = PGProperty.LOG_LEVEL.get(defaultProperties);
+                if (driverLogLevel != null) {
+                    try {
+                        setLogLevel(Integer.parseInt(driverLogLevel));
+                    } catch (Exception ignore) {
+                        // invalid value for loglevel; ignore it
+                    }
+                }
+            }
+        }
+
+        return defaultProperties;
+    }
+
+    private Properties loadDefaultProperties() throws IOException {
+        Properties merged = new Properties();
+
+        try {
+            PGProperty.USER.set(merged, System.getProperty("user.name"));
+        } catch (java.lang.SecurityException se) {
+            // We're just trying to set a default, so if we can't
+            // it's not a big deal.
+        }
+
+        // If we are loaded by the bootstrap classloader, getClassLoader()
+        // may return null. In that case, try to fall back to the system
+        // classloader.
+        //
+        // We should not need to catch SecurityException here as we are
+        // accessing either our own classloader, or the system classloader
+        // when our classloader is null. The ClassLoader javadoc claims
+        // neither case can throw SecurityException.
+        ClassLoader cl = getClass().getClassLoader();
+        if (cl == null)
+            cl = ClassLoader.getSystemClassLoader();
+
+        if (cl == null) {
+            LOGGER.debug("Can't find a classloader for the Driver; not loading driver configuration");
+            return merged; // Give up on finding defaults.
+        }
+
+        LOGGER.debug("Loading driver configuration via classloader " + cl);
+
+        // When loading the driver config files we don't want settings found
+        // in later files in the classpath to override settings specified in
+        // earlier files.  To do this we've got to read the returned
+        // Enumeration into temporary storage.
+        ArrayList<URL> urls = new ArrayList();
+        Enumeration<URL> urlEnum = cl.getResources("org/postgresql/driverconfig.properties");
+        while (urlEnum.hasMoreElements())
+            urls.add(urlEnum.nextElement());
+
+        for (int i = urls.size() - 1; i >= 0; i--) {
+            URL url = urls.get(i);
+            LOGGER.debug("Loading driver configuration from: " + url);
+            InputStream is = url.openStream();
+            merged.load(is);
+            is.close();
+        }
+
+        return merged;
+    }
+
+    /**
+     * Try to make a database connection to the given URL. The driver
+     * should return "null" if it realizes it is the wrong kind of
+     * driver to connect to the given URL. This will be common, as
+     * when the JDBC driverManager is asked to connect to a given URL,
+     * it passes the URL to each loaded driver in turn.
+     * <p/>
+     * <p>The driver should raise an SQLException if it is the right driver
+     * to connect to the given URL, but has trouble connecting to the
+     * database.
+     * <p/>
+     * <p>The java.util.Properties argument can be used to pass arbitrary
+     * string tag/value pairs as connection arguments.
+     * <p/>
+     * user - (required) The user to connect as
+     * password - (optional) The password for the user
+     * ssl - (optional) Use SSL when connecting to the server
+     * readOnly - (optional) Set connection to read-only by default
+     * charSet - (optional) The character set to be used for converting
+     * to/from the database to unicode.  If multibyte is enabled on the
+     * server then the character set of the database is used as the default,
+     * otherwise the jvm character encoding is used as the default.
+     * This value is only used when connecting to a 7.2 or older server.
+     * loglevel - (optional) Enable logging of messages from the driver.
+     * The value is an integer from 0 to 2 where:
+     * OFF = 0, INFO = 1, DEBUG = 2
+     * The output is sent to DriverManager.getPrintWriter() if set,
+     * otherwise it is sent to System.out.
+     * compatible - (optional) This is used to toggle
+     * between different functionality as it changes across different releases
+     * of the jdbc driver code.  The values here are versions of the jdbc
+     * client and not server versions.  For example in 7.1 get/setBytes
+     * worked on LargeObject values, in 7.2 these methods were changed
+     * to work on bytea values.  This change in functionality could
+     * be disabled by setting the compatible level to be "7.1", in
+     * which case the driver will revert to the 7.1 functionality.
+     * <p/>
+     * <p>Normally, at least
+     * "user" and "password" properties should be included in the
+     * properties. For a list of supported
+     * character encoding , see
+     * http://java.sun.com/products/jdk/1.2/docs/guide/internat/encoding.doc.html
+     * Note that you will probably want to have set up the Postgres database
+     * itself to use the same encoding, with the "-E <encoding>" argument
+     * to createdb.
+     * <p/>
+     * Our protocol takes the forms:
+     * <PRE>
+     * jdbc:agensgraph://host:port/database?param1=val1&...
+     * </PRE>
+     *
+     * @param url  the URL of the database to connect to
+     * @param info a list of arbitrary tag/value pairs as connection
+     *             arguments
+     * @return a connection to the URL or null if it isnt us
+     * @throws SQLException if a database access error occurs
+     * @see java.sql.Driver#connect
+     */
+    public java.sql.Connection connect(String url, Properties info) throws SQLException {
+        // get defaults
+        Properties defaults;
+
+        if (!url.startsWith(AGENSGRAPH_PROTOCOL))
+            return null;
+
+        try {
+            defaults = getDefaultProperties();
+        } catch (IOException ioe) {
+            throw new PSQLException(GT.tr("Error loading default settings from driverconfig.properties"),
+                    PSQLState.UNEXPECTED_ERROR, ioe);
+        }
+
+        // override defaults with provided properties
+        Properties props = new Properties(defaults);
+        if (info != null) {
+            Enumeration e = info.propertyNames();
+            while (e.hasMoreElements()) {
+                String propName = (String) e.nextElement();
+                String propValue = info.getProperty(propName);
+                if (propValue == null) {
+                    throw new PSQLException(GT.tr("Properties for the driver contains a non-string value for the key ") + propName,
+                            PSQLState.UNEXPECTED_ERROR);
+                }
+                props.setProperty(propName, propValue);
+            }
+        }
+        // parse URL and add more properties
+        props = parseURL(url, props);
+        if (props == null) {
+            LOGGER.debug("Error in url: " + url);
+            return null;
+        }
+        try {
+            LOGGER.debug("Connecting with URL: " + url);
+
+            // Enforce login timeout, if specified, by running the connection
+            // attempt in a separate thread. If we hit the timeout without the
+            // connection completing, we abandon the connection attempt in
+            // the calling thread, but the separate thread will keep trying.
+            // Eventually, the separate thread will either fail or complete
+            // the connection; at that point we clean up the connection if
+            // we managed to establish one after all. See ConnectThread for
+            // more details.
+            long timeout = timeout(props);
+            if (timeout <= 0)
+                return makeConnection(url, props);
+
+            ConnectThread ct = new ConnectThread(url, props);
+            Thread thread = new Thread(ct, "Agens Graph JDBC driver connection thread");
+            thread.setDaemon(true); // Don't prevent the VM from shutting down
+            thread.start();
+            return ct.getResult(timeout);
+        } catch (PSQLException ex1) {
+            LOGGER.debug("Connection error:", ex1);
+            // re-throw the exception, otherwise it will be caught next, and a
+            // org.postgresql.unusual error will be returned instead. // FIXME
+            throw ex1;
+        } catch (AccessControlException ace) {
+            throw new PSQLException(GT.tr("Your security policy has prevented the connection from being attempted.  You probably need to grant the connect java.net.SocketPermission to the database server host and port that you wish to connect to."), PSQLState.UNEXPECTED_ERROR, ace);
+        } catch (Exception ex2) {
+            LOGGER.debug("Unexpected connection error:", ex2);
+            throw new PSQLException(GT.tr("Something unusual has occurred to cause the driver to fail. Please report this exception."),
+                    PSQLState.UNEXPECTED_ERROR, ex2);
+        }
+    }
+
+    /**
+     * Perform a connect in a separate thread; supports
+     * getting the results from the original thread while enforcing
+     * a login timeout.
+     */
+    private static class ConnectThread implements Runnable {
+        ConnectThread(String url, Properties props) {
+            this.url = url;
+            this.props = props;
+        }
+
+        public void run() {
+            Connection conn;
+            Throwable error;
+
+            try {
+                conn = makeConnection(url, props);
+                error = null;
+            } catch (Throwable t) {
+                conn = null;
+                error = t;
+            }
+
+            synchronized (this) {
+                if (abandoned) {
+                    if (conn != null) {
+                        try {
+                            conn.close();
+                        } catch (SQLException ignored) { }
+                    }
+                } else {
+                    result = conn;
+                    resultException = error;
+                    notify();
+                }
+            }
+        }
+
+        /**
+         * Get the connection result from this (assumed running) thread.
+         * If the timeout is reached without a result being available,
+         * a SQLException is thrown.
+         *
+         * @param timeout timeout in milliseconds
+         * @return the new connection, if successful
+         * @throws SQLException if a connection error occurs or the timeout is reached
+         */
+        public Connection getResult(long timeout) throws SQLException {
+            long expiry = System.currentTimeMillis() + timeout;
+            synchronized (this) {
+                while (true) {
+                    if (result != null)
+                        return result;
+
+                    if (resultException != null) {
+                        if (resultException instanceof SQLException) {
+                            resultException.fillInStackTrace();
+                            throw (SQLException) resultException;
+                        } else {
+                            throw new PSQLException(GT.tr("Something unusual has occurred to cause the driver to fail. Please report this exception."),
+                                    PSQLState.UNEXPECTED_ERROR, resultException);
+                        }
+                    }
+
+                    long delay = expiry - System.currentTimeMillis();
+                    if (delay <= 0) {
+                        abandoned = true;
+                        throw new PSQLException(GT.tr("Connection attempt timed out."),
+                                PSQLState.CONNECTION_UNABLE_TO_CONNECT);
+                    }
+
+                    try {
+                        wait(delay);
+                    } catch (InterruptedException ie) {
+                        // reset the interrupt flag
+                        Thread.currentThread().interrupt();
+                        abandoned = true;
+
+                        // throw an unchecked exception which will hopefully not be ignored by the calling code
+                        throw new RuntimeException(GT.tr("Interrupted while attempting to connect."));
+                    }
+                }
+            }
+        }
+
+        private final String url;
+        private final Properties props;
+        private Connection result;
+        private Throwable resultException;
+        private boolean abandoned;
+    }
+
+    /**
+     * Create a connection from URL and properties. Always
+     * does the connection work in the current thread without
+     * enforcing a timeout, regardless of any timeout specified
+     * in the properties.
+     *
+     * @param url   the original URL
+     * @param props the parsed/defaulted connection properties
+     * @return a new connection
+     * @throws SQLException if the connection could not be made
+     */
+    private static Connection makeConnection(String url, Properties props) throws SQLException {
+        return new AgensGraphConnection(hostSpecs(props), user(props), database(props), props, url);
+    }
+
+    /**
+     * Returns true if the driver thinks it can open a connection to the
+     * given URL.  Typically, drivers will return true if they understand
+     * the subprotocol specified in the URL and false if they don't.  Our
+     * protocols start with jdbc:postgresql:
+     *
+     * @param url the URL of the driver
+     * @return true if this driver accepts the given URL
+     * @see java.sql.Driver#acceptsURL
+     */
+    public boolean acceptsURL(String url) {
+        return parseURL(url, null) != null;
+    }
+
+    /**
+     * The getPropertyInfo method is intended to allow a generic GUI
+     * tool to discover what properties it should prompt a human for
+     * in order to get enough information to connect to a database.
+     * <p/>
+     * <p>Note that depending on the values the human has supplied so
+     * far, additional values may become necessary, so it may be necessary
+     * to iterate through several calls to getPropertyInfo
+     *
+     * @param url  the Url of the database to connect to
+     * @param info a proposed list of tag/value pairs that will be sent on
+     *             connect open.
+     * @return An array of DriverPropertyInfo objects describing
+     * possible properties.  This array may be an empty array if
+     * no properties are required
+     * @see java.sql.Driver#getPropertyInfo
+     */
+    public DriverPropertyInfo[] getPropertyInfo(String url, Properties info) {
+        Properties copy = new Properties(info);
+        Properties parse = parseURL(url, copy);
+        if (parse != null)
+            copy = parse;
+
+        PGProperty[] knownProperties = PGProperty.values();
+        DriverPropertyInfo[] props = new DriverPropertyInfo[knownProperties.length];
+        for (int i = 0; i < props.length; ++i)
+            props[i] = knownProperties[i].toDriverPropertyInfo(copy);
+
+        return props;
+    }
+
+    public static final int MAJORVERSION = 0; // must be same as Agens Graph major version
+
+    /**
+     * Gets the drivers major version number
+     *
+     * @return the drivers major version number
+     */
+    public int getMajorVersion() {
+        return MAJORVERSION;
+    }
+
+
+    public static final int MINORVERSION = 1; // must be same as Agens Graph minor version
+
+    /**
+     * Get the drivers minor version number
+     *
+     * @return the drivers minor version number
+     */
+    public int getMinorVersion() {
+        return MINORVERSION;
+    }
+
+    /**
+     * Returns the server version series of this driver and the
+     * specific build number.
+     */
+    public static String getVersion() {
+        return "Agens Graph " + MAJORVERSION + "." + MINORVERSION + "JDBC4.1";
+    }
+
+    /**
+     * Report whether the driver is a genuine JDBC compliant driver.  A
+     * driver may only report "true" here if it passes the JDBC compliance
+     * tests, otherwise it is required to return false.  JDBC compliance
+     * requires full support for the JDBC API and full support for SQL 92
+     * Entry Level.
+     * <p/>
+     * <p>For PostgreSQL, this is not yet possible, as we are not SQL92
+     * compliant (yet).
+     */
+    public boolean jdbcCompliant() {
+        return false;
+    }
+
+    private static final String[] PROTOCOLS = {"jdbc", "agensgraph"};
+    private static final String AGENSGRAPH_PROTOCOL = String.format("%s:%s:", (Object[]) PROTOCOLS);
+
+    private static final String DEFAULT_AGENSGRAPH_PORT = "58000";
+
+    /**
+     * Constructs a new DriverURL, splitting the specified URL into its
+     * component parts
+     *
+     * @param url      JDBC URL to parse
+     * @param defaults Default properties
+     * @return Properties with elements added from the url
+     */
+    public static Properties parseURL(String url, Properties defaults) {
+        Properties urlProps = new Properties(defaults);
+
+        String urlServer = url;
+        String urlArgs = "";
+
+        int qPos = url.indexOf('?');
+        if (qPos != -1) {
+            urlServer = url.substring(0, qPos);
+            urlArgs = url.substring(qPos + 1);
+        }
+
+        if (!urlServer.startsWith(AGENSGRAPH_PROTOCOL))
+            return null;
+
+        urlServer = urlServer.substring(AGENSGRAPH_PROTOCOL.length());
+
+        if (urlServer.startsWith("//")) { // FIXME: Environment variables
+            urlServer = urlServer.substring(2);
+            int slashIdx = urlServer.indexOf('/');
+            if (slashIdx > -1)
+                urlServer = urlServer.substring(0, slashIdx);
+
+            StringBuilder hosts = new StringBuilder();
+            StringBuilder ports = new StringBuilder();
+            String[] addrs = urlServer.split(",");
+            for (String addr : addrs) {
+                addr = addr.trim();
+
+                String host;
+                String port;
+
+                int portIdx = addr.lastIndexOf(':');
+                if (portIdx > -1 && addr.lastIndexOf(']') < portIdx) {
+                    host = addr.substring(0, portIdx);
+                    port = addr.substring(portIdx + 1);
+                    if (port.isEmpty()) {
+                        port = DEFAULT_AGENSGRAPH_PORT;
+                    } else {
+                        try {
+                            Integer.parseInt(port);
+                        } catch (NumberFormatException e) {
+                            return null;
+                        }
+                    }
+                } else {
+                    host = addr;
+                    port = DEFAULT_AGENSGRAPH_PORT;
+                }
+
+                if (host.isEmpty())
+                    host = "localhost";
+
+                hosts.append(host).append(',');
+                ports.append(port).append(',');
+            }
+
+            hosts.setLength(hosts.length() - 1);
+            ports.setLength(hosts.length() - 1);
+
+            urlProps.setProperty("PGHOST", hosts.toString());
+            urlProps.setProperty("PGPORT", ports.toString());
+            urlProps.setProperty("PGDBNAME", "<unknown>");
+        } else {
+            urlProps.setProperty("PGHOST", "localhost");
+            urlProps.setProperty("PGPORT", DEFAULT_AGENSGRAPH_PORT);
+            urlProps.setProperty("PGDBNAME", "<unknown>");
+        }
+
+        // parse the args part of the url
+        String[] args = urlArgs.split("&");
+        for (String token : args) {
+            if (token.isEmpty())
+                continue;
+
+            int pos = token.indexOf('=');
+            if (pos > -1)
+                urlProps.setProperty(token.substring(0, pos), token.substring(pos + 1));
+            else
+                urlProps.setProperty(token, "");
+        }
+
+        return urlProps;
+    }
+
+    /**
+     * @return the address portion of the URL
+     */
+    protected static HostSpec[] hostSpecs(Properties props) {
+        String[] hosts = props.getProperty("PGHOST").split(",");
+        String[] ports = props.getProperty("PGPORT").split(",");
+        HostSpec[] hostSpecs = new HostSpec[hosts.length];
+        for (int i = 0; i < hostSpecs.length; ++i)
+            hostSpecs[i] = new HostSpec(hosts[i], Integer.parseInt(ports[i]));
+
+        return hostSpecs;
+    }
+
+    /**
+     * @return the username of the URL
+     */
+    protected static String user(Properties props) {
+        return props.getProperty("user", "");
+    }
+
+    /**
+     * @return the database name of the URL
+     */
+    protected static String database(Properties props) {
+        return props.getProperty("PGDBNAME", "");
+    }
+
+    /**
+     * @return the timeout from the URL, in milliseconds
+     */
+    protected static long timeout(Properties props) {
+        final int msecPerSec = 1000;
+
+        String timeout = PGProperty.LOGIN_TIMEOUT.get(props);
+        if (timeout != null) {
+            try {
+                return (long) (Float.parseFloat(timeout) * msecPerSec);
+            } catch (NumberFormatException e) {
+                // Log level isn't set yet, so this doesn't actually
+                // get printed.
+                LOGGER.debug("Couldn't parse loginTimeout value: " + timeout);
+            }
+        }
+        return (long) DriverManager.getLoginTimeout() * msecPerSec;
+    }
+
+    /*
+     * This method was added in v6.5, and simply throws an SQLException
+     * for an unimplemented method. I decided to do it this way while
+     * implementing the JDBC2 extensions to JDBC, as it should help keep the
+     * overall driver size down.
+     * It now requires the call Class and the function name to help when the
+     * driver is used with closed software that don't report the stack strace
+     * @param callClass the call Class
+     * @param functionName the name of the unimplemented function with the type
+     *  of its arguments
+     * @return PSQLException with a localized message giving the complete
+     *  description of the unimplemeted function
+     */
+    public static SQLFeatureNotSupportedException notImplemented(Class callClass, String functionName) {
+        return new SQLFeatureNotSupportedException(GT.tr("Method {0} is not yet implemented.", callClass.getName() + "." + functionName),
+                PSQLState.NOT_IMPLEMENTED.getState());
+    }
+
+    /**
+     * used to turn logging on to a certain level, can be called
+     * by specifying fully qualified class ie org.postgresql.Driver.setLogLevel()
+     *
+     * @param logLevel sets the level which logging will respond to
+     *                 OFF turn off logging
+     *                 INFO being almost no messages
+     *                 DEBUG most verbose
+     */
+    public static void setLogLevel(int logLevel) {
+        synchronized (Driver.class) {
+            LOGGER.setLogLevel(logLevel);
+            logLevelSet = true;
+        }
+    }
+
+    public static int getLogLevel() {
+        synchronized (Driver.class) {
+            return LOGGER.getLogLevel();
+        }
+    }
+
+    public java.util.logging.Logger getParentLogger() throws SQLFeatureNotSupportedException {
+        throw notImplemented(this.getClass(), "getParentLogger()");
+    }
+
+    public static SharedTimer getSharedTimer() {
+        return sharedTimer;
+    }
+
+    /**
+     * Register the driver against {@link DriverManager}. This is done automatically when the class is loaded.
+     * Dropping the driver from DriverManager's list is possible using {@link #deregister()} method.
+     *
+     * @throws IllegalStateException if the driver is already registered
+     * @throws SQLException          if registering the driver fails
+     */
+    public static void register() throws SQLException {
+        if (isRegistered())
+            throw new IllegalStateException("Driver is already registered. It can only be registered once.");
+
+        Driver driver = new Driver();
+        DriverManager.registerDriver(driver);
+        Driver.registeredDriver = driver;
+    }
+
+    /**
+     * According to JDBC specification, this driver is registered against {@link DriverManager}
+     * when the class is loaded. To avoid leaks, this method allow unregistering the driver
+     * so that the class can be gc'ed if necessary.
+     *
+     * @throws IllegalStateException if the driver is not registered
+     * @throws SQLException          if deregistering the driver fails
+     */
+    public static void deregister() throws SQLException {
+        if (!isRegistered())
+            throw new IllegalStateException("Driver is not registered (or it has not been registered using Driver.register() method)");
+
+        DriverManager.deregisterDriver(registeredDriver);
+        registeredDriver = null;
+    }
+
+    /**
+     * @return {@code true} if the driver is registered against {@link DriverManager}
+     */
+    public static boolean isRegistered() {
+        return registeredDriver != null;
+    }
+}
