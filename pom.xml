@@ -17,8 +17,8 @@ limitations under the License.
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>kr.co.bitnine.agens-graph</groupId>
-  <artifactId>agens-graph-jdbc</artifactId>
+  <groupId>net.bitnine.agensgraph</groupId>
+  <artifactId>agensgraph-jdbc</artifactId>
   <version>0.1.0-SNAPSHOT</version>
 
   <name>Agens Graph JDBC</name>
@@ -28,7 +28,13 @@ limitations under the License.
     <dependency>
       <groupId>org.postgresql</groupId>
       <artifactId>postgresql</artifactId>
-      <version>9.4-1201-jdbc41</version>
+      <version>9.4.1208.jre7</version>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.12</version>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 
