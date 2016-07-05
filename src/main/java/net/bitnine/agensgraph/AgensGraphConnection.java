@@ -14,20 +14,20 @@
 
 package net.bitnine.agensgraph;
 
-import org.postgresql.jdbc4.Jdbc4Connection;
+import org.postgresql.jdbc.PgConnection;
 import org.postgresql.util.HostSpec;
 
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.Properties;
 
-class AgensGraphConnection extends Jdbc4Connection {
+class AgensGraphConnection extends PgConnection {
     AgensGraphConnection(HostSpec[] hostSpecs, String user, String database, Properties info, String url) throws SQLException {
         super(hostSpecs, user, database, info, url);
     }
 
     /*
-     * We override getMetaData() to return AgensGraphOctopusDatabaseMetaData.
+     * We override getMetaData() to return AgensGraphDatabaseMetaData.
      * This is the main reason why we made this class.
      */
     @Override
@@ -35,7 +35,7 @@ class AgensGraphConnection extends Jdbc4Connection {
         checkClosed();
 
         if (metadata == null)
-            metadata = new AgensGraphOctopusDatabaseMetaData(this);
+            metadata = new AgensGraphDatabaseMetaData(this);
 
         return metadata;
     }
