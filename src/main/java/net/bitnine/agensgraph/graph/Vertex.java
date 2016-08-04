@@ -13,12 +13,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Vertex extends PGobject implements Serializable, Closeable {
-    private static Pattern _pattern;
+    private static final Pattern _pattern;
     public GID vid;
     public String properties;
 
-    {
-        _pattern = Pattern.compile("Node\\[(\\d+):(\\d+)\\](.*)");
+    static {
+        _pattern = Pattern.compile("\\[(\\d+):(\\d+)\\](.*)");
     }
 
     public Vertex() {
@@ -35,8 +35,7 @@ public class Vertex extends PGobject implements Serializable, Closeable {
         if (m.find()) {
             vid = new GID(Integer.parseInt(m.group(1)), Integer.parseInt(m.group(2)));
             properties = m.group(3);
-        }
-        else {
+        } else {
             throw new PSQLException(GT.tr("Conversion to type {0} failed: {1}.", new Object[]{type, s}),
                     PSQLState.DATA_TYPE_MISMATCH);
         }
@@ -47,7 +46,5 @@ public class Vertex extends PGobject implements Serializable, Closeable {
     }
 
     @Override
-    public void close() throws IOException {
-
-    }
+    public void close() throws IOException { }
 }

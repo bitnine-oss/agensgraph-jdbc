@@ -1,18 +1,12 @@
 package net.bitnine.agensgraph.test;
 
-import junit.framework.Assert;
 import junit.framework.TestCase;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
-import java.util.Properties;
 
 public class JDBCBasicTest extends TestCase {
-
     private Connection con;
 
     public void setUp() throws Exception {
@@ -24,7 +18,6 @@ public class JDBCBasicTest extends TestCase {
     }
 
     public void tearDown() throws Exception {
-        TestUtil.dropTable(con, "test_a");
         Statement st = con.createStatement();
         st.execute("drop vlabel person");
         st.execute("drop elabel employee");
@@ -37,14 +30,15 @@ public class JDBCBasicTest extends TestCase {
         Statement st = con.createStatement();
         assertNotNull(st);
 
-        st.executeUpdate("insert into graph.person values (1, '{\"name\": \"bitnine\"}')");
-        st.executeUpdate("insert into graph.person values (2, '{\"name\": \"jsyang\"}')");
-        st.executeUpdate("insert into graph.person values (3, '{\"name\": \"someone\"}')");
-        st.executeUpdate("insert into graph.person values (4, '{\"name\": \"tree\"}')");
+        st.execute("create (:person '{\"name\":\"bitnine\"}')"
+                + "-[:employee '{\"prop\":\"employee\"}']->"
+                + "(:person '{\"name\":\"jsyang\"}')"
+                + "-[:employee '{\"prop\":\"manage\"}']->"
+                + "(:person '{\"name\":\"someone\"}')");
 
-        st.executeUpdate("insert into graph.employee values (1, 'graph.person'::regclass, 1, 'graph.person'::regclass, 2, '{\"prop\": \"employee\"}')");
-        st.executeUpdate("insert into graph.employee values (2, 'graph.person'::regclass, 2, 'graph.person'::regclass, 3, '{\"prop\": \"manage\"}')");
-        st.executeUpdate("insert into graph.employee values (3, 'graph.person'::regclass, 1, 'graph.person'::regclass, 4, '{\"prop\": \"branch\"}')");
+        st.execute("match (p:person '{\"name\":\"bitnine\"}')"
+                + "create (p)-[:employee '{\"prop\":\"branch\"}']->"
+                + "(:person '{\"name\":\"tree\"}')");
 
         ResultSet rs = st.executeQuery("MATCH (n)<-[r]-(m), (m)-[s]->(q) RETURN n, r, m, s, q");
         while (rs.next()) {
@@ -56,5 +50,4 @@ public class JDBCBasicTest extends TestCase {
             System.out.println("row: " + n + ", " + r + ", " + m + ", " + s + ", " + q);
         }
     }
-
 }
