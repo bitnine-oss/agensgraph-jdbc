@@ -26,11 +26,16 @@ public class Edge extends PGobject implements Serializable, Closeable {
         setType("edge");
     }
 
+    public Edge(String s) throws SQLException {
+        this();
+        setValue(s);
+    }
+
     public void setValue(String s) throws SQLException {
         Matcher m = _pattern.matcher(s);
         if (m.find()) {
             label = m.group(1);
-            vid = new GID(Integer.parseInt(m.group(2)), Integer.parseInt(m.group(3)));
+            vid = new GID(m.group(2), m.group(3));
             properties = m.group(4);
         }
         else {

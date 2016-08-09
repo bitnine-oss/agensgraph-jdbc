@@ -14,6 +14,7 @@ import java.util.regex.Pattern;
 
 public class Vertex extends PGobject implements Serializable, Closeable {
     private static final Pattern _pattern;
+
     public GID vid;
     public String properties;
 
@@ -26,10 +27,17 @@ public class Vertex extends PGobject implements Serializable, Closeable {
     }
 
     public Vertex(GID vid, String properties) {
+        this();
         this.vid = vid;
         this.properties = properties;
     }
 
+    public Vertex(String s) throws SQLException {
+        this();
+        setValue(s);
+    }
+
+    @Override
     public void setValue(String s) throws SQLException {
         Matcher m = _pattern.matcher(s);
         if (m.find()) {
@@ -46,5 +54,6 @@ public class Vertex extends PGobject implements Serializable, Closeable {
     }
 
     @Override
-    public void close() throws IOException { }
+    public void close() throws IOException {
+    }
 }
