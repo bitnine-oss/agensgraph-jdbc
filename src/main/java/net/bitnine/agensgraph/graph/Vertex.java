@@ -26,14 +26,21 @@ public class Vertex extends PGobject implements Serializable, Closeable {
 	}
 
 	public Vertex(GID vid, String properties) {
+		this();
 		this.vid = vid;
 		this.properties = properties;
 	}
 
+	public Vertex(String s) throws SQLException {
+		this();
+		setValue(s);
+	}
+
+	@Override
 	public void setValue(String s) throws SQLException {
 		Matcher m = _pattern.matcher(s);
 		if (m.find()) {
-			vid = new GID(Integer.parseInt(m.group(1)), Integer.parseInt(m.group(2)));
+			vid = new GID(m.group(1), m.group(2));
 			properties = m.group(3);
 		}
 		else {
@@ -42,6 +49,7 @@ public class Vertex extends PGobject implements Serializable, Closeable {
 		}
 	}
 
+	@Override
 	public String getValue() {
 		return "vertex ID:" + vid.toString() + ", properties:" + properties;
 	}

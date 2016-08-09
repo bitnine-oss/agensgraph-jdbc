@@ -16,6 +16,10 @@ public class GID {
         this.id = id;
     }
 
+    public GID(String oid, String id) {
+		this(Integer.parseInt(oid), Integer.parseInt(id));
+    }
+
     public String toString() {
         return "[" + oid + ":" + id + "]";
     }
