@@ -271,7 +271,7 @@ public class Driver implements java.sql.Driver {
         // add properties for additional datatypes in Agens Graph
         props.setProperty("datatype.vertex", "net.bitnine.agensgraph.graph.Vertex");
         props.setProperty("datatype.edge", "net.bitnine.agensgraph.graph.Edge");
-        props.setProperty("datatype.path", "net.bitnine.agensgraph.graph.Path");
+        props.setProperty("datatype.graphpath", "net.bitnine.agensgraph.graph.Path");
         try {
             if (logger.logDebug()) {
                 logger.debug("Connecting with URL: " + url);
