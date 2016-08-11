@@ -18,7 +18,7 @@ public class Edge extends PGobject implements Serializable, Closeable {
     public String label;
     public String properties;
 
-    {
+    static {
         _pattern = Pattern.compile(":(.+)\\[(\\d+):(\\d+)\\](.*)");
     }
 

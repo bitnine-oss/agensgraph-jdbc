@@ -26,12 +26,6 @@ public class Vertex extends PGobject implements Serializable, Closeable {
         setType("vertex");
     }
 
-    public Vertex(GID vid, String properties) {
-        this();
-        this.vid = vid;
-        this.properties = properties;
-    }
-
     public Vertex(String s) throws SQLException {
         this();
         setValue(s);

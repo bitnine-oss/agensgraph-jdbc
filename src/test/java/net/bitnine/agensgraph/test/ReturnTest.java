@@ -1,15 +1,10 @@
 package net.bitnine.agensgraph.test;
 
-import net.bitnine.agensgraph.graph.Edge;
-import net.bitnine.agensgraph.graph.Path;
-import net.bitnine.agensgraph.graph.Vertex;
-
 import junit.framework.TestCase;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
-import java.util.Properties;
 
 public class ReturnTest extends TestCase {
 

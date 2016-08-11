@@ -1,15 +1,13 @@
 package net.bitnine.agensgraph.test;
 
+import junit.framework.TestCase;
 import net.bitnine.agensgraph.graph.Edge;
 import net.bitnine.agensgraph.graph.Path;
 import net.bitnine.agensgraph.graph.Vertex;
 
-import junit.framework.TestCase;
-
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
-import java.util.Properties;
 
 public class PathTest extends TestCase {
 
@@ -24,7 +22,7 @@ public class PathTest extends TestCase {
             st.execute("drop vlabel person");
             st.execute("drop elabel employee");
         }
-        catch (Exception e) {}
+        catch (Exception ignored) {}
         st.execute("create vlabel person");
         st.execute("create elabel employee");
         create();
