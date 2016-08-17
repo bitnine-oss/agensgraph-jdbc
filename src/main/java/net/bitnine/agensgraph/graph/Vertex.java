@@ -58,7 +58,16 @@ public class Vertex extends PGobject implements Serializable, Closeable {
     public void close() throws IOException {
     }
 
+    public String getLabel() {
+        return label;
+    }
+
     public JsonObject getProperty() {
         return props;
+    }
+
+    @Override
+    public String toString() {
+        return getValue();
     }
 }

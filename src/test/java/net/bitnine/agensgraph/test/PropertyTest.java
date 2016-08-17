@@ -7,6 +7,7 @@ import net.bitnine.agensgraph.graph.property.JsonArray;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.InputMismatchException;
 
 public class PropertyTest extends TestCase {
 
@@ -18,27 +19,32 @@ public class PropertyTest extends TestCase {
         con.setAutoCommit(true);
         st = con.createStatement();
         try {
-            st.execute("drop vlabel person");
-            st.execute("drop elabel employee");
+            dropSchema();
         }
         catch (Exception ignored) {}
+        st.execute("create vlabel company");
         st.execute("create vlabel person");
         st.execute("create elabel employee");
         create();
     }
 
     private void create() throws Exception {
-        st.execute("create (:person '{\"name\":\"bitnine\"}')"
+        st.execute("create (:company '{\"name\":\"bitnine\"}')"
                 + "-[:employee '{\"no\":1}']"
                 + "->(:person '{\"name\":\"jsyang\",\"age\":20,\"height\":178.5,\"married\":false}')");
-        st.execute("create (:person '{\"name\":\"bitnine\"}')"
+        st.execute("create (:company '{\"name\":\"bitnine\"}')"
                 + "-[:employee '{\"no\":2}']"
-                + "->(:person '{\"array\":[1,2,3,4,5]}')");
+                + "->(:person '{\"name\":\"ktlee\",\"hobbies\":[\"reading\",\"climbing\"],\"age\":null}')");
+    }
+
+    private void dropSchema() throws Exception {
+        st.execute("drop vlabel company");
+        st.execute("drop vlabel person");
+        st.execute("drop elabel employee");
     }
 
     public void tearDown() throws Exception {
-        st.execute("drop vlabel person");
-        st.execute("drop elabel employee");
+        dropSchema();
         st.close();
         TestUtil.closeDB(con);
     }
@@ -47,16 +53,25 @@ public class PropertyTest extends TestCase {
         ResultSet rs = st.executeQuery("MATCH (n)-[:employee '{\"no\":1}']->(m) RETURN n, m");
         while (rs.next()) {
             Vertex n = (Vertex)rs.getObject("m");
-            assertEquals((int)n.getProperty().getInt("age"), 20);
-            assertEquals(n.getProperty().getDouble("height"), 178.5);
+            assertEquals(20, (int)n.getProperty().getInt("age"));
+            assertEquals(178.5, n.getProperty().getDouble("height"));
             assertFalse(n.getProperty().getBoolean("married"));
         }
-        rs = st.executeQuery("MATCH (n)-[:employee '{\"no\":2}']->(m) RETURN n, m");
+        rs = st.executeQuery("MATCH (n)-['{\"no\":2}']->(m) RETURN n, m");
         while (rs.next()) {
             Vertex n = (Vertex)rs.getObject("m");
-            JsonArray array = n.getProperty().getArray("array");
-            assertEquals((int)array.getInt(3), 4);
+            JsonArray array = n.getProperty().getArray("hobbies");
+            assertEquals("climbing", array.getString(1));
+            Long age = n.getProperty().getLong("age");
+            assertEquals(null, age);
         }
+        // TODO array value
+        /*
+            rs = st.executeQuery("MATCH (n)-['{\"no\":2}']->(m) RETURN (m).hobbies as hobbies");
+        while (rs.next()) {
+            PGobject o = (PGobject)rs.getObject("hobbies");
+        }
+        */
         rs.close();
     }
 }

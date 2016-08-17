@@ -64,7 +64,16 @@ public class Edge extends PGobject implements Serializable, Closeable {
 
     }
 
+    public String getLabel() {
+        return label;
+    }
+
     public JsonObject getProperty() {
         return props;
+    }
+
+    @Override
+    public String toString() {
+        return getValue();
     }
 }

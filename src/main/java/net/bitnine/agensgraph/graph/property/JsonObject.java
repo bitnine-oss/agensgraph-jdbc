@@ -8,10 +8,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-/**
- * Created by ktlee on 16. 8. 16.
- */
-@SuppressWarnings("ALL")
 public class JsonObject {
     private JSONObject props;
 
@@ -19,7 +15,7 @@ public class JsonObject {
         props = (JSONObject) JSONValue.parse(s);
     }
 
-    protected JsonObject(JSONObject json) {
+    JsonObject(JSONObject json) {
         props = json;
     }
 
@@ -60,7 +56,8 @@ public class JsonObject {
     }
 
     public Integer getInt(String name) {
-        return getLong(name).intValue();
+        Long value = getLong(name);
+        return (value == null) ? null : value.intValue();
     }
 
     public Long getLong(String name) {
@@ -80,8 +77,8 @@ public class JsonObject {
     }
 
     public Map<String, Object> toMap() {
-        Map<String, Object> newMap = new HashMap();
-        for (String name : (Set<String>)props.keySet()) {
+        Map<String, Object> newMap = new HashMap<>();
+        for (String name : getNames()) {
             Object value = props.get(name);
             if (value instanceof JSONObject) {
                 newMap.put(name, new JsonObject((JSONObject)value));

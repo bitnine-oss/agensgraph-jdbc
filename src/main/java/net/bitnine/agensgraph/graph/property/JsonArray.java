@@ -6,12 +6,7 @@ import org.json.simple.JSONValue;
 
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 
-/**
- * Created by ktlee on 16. 8. 16.
- */
-@SuppressWarnings("ALL")
 public class JsonArray {
     private JSONArray array;
 
@@ -52,7 +47,8 @@ public class JsonArray {
     }
 
     public Integer getInt(int index) {
-        return getLong(index).intValue();
+        Long value = getLong(index);
+        return (value == null) ? null : value.intValue();
     }
 
     public Long getLong(int index) {
@@ -64,7 +60,7 @@ public class JsonArray {
     }
 
     public Iterator<Object> iterator() {
-        List<Object> l = new ArrayList();
+        ArrayList<Object> l = new ArrayList<>();
         for (Object elem : array) {
             if (elem instanceof JSONObject) {
                 l.add(new JsonObject((JSONObject)elem));

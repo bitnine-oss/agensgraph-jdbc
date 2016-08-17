@@ -19,46 +19,62 @@ public class PathTest extends TestCase {
         con.setAutoCommit(true);
         st = con.createStatement();
         try {
-            st.execute("drop vlabel person");
-            st.execute("drop elabel employee");
+            dropSchema();
         }
         catch (Exception ignored) {}
+        st.execute("create vlabel company");
         st.execute("create vlabel person");
         st.execute("create elabel employee");
+        st.execute("create elabel manage");
         create();
     }
 
+    private void dropSchema() throws Exception {
+        st.execute("drop vlabel company");
+        st.execute("drop vlabel person");
+        st.execute("drop elabel employee");
+        st.execute("drop elabel manage");
+    }
+
     private void create() throws Exception {
-        st.execute("create (:person '{\"name\":\"bitnine\"}')"
-                + "-[:employee '{\"prop\":\"employee\"}']"
-                + "->(:person '{\"name\":\"jsyang\"}')"
-                + "-[:employee '{\"prop\":\"manage\"}']"
-                + "->(:person '{\"name\":\"someone\"}')");
-        st.execute("match (p:person '{\"name\":\"bitnine\"}')"
-                + "create (p)-[:employee '{\"prop\":\"branch\"}']"
-                + "->(:person '{\"name\":\"tree\"}')");
+        st.execute("create (:company '{\"name\":\"bitnine\"}')"
+                + "-[:employee]"
+                + "->(:person '{\"name\":\"kskim\"}')"
+                + "-[:manage]"
+                + "->(:person '{\"name\":\"ktlee\"}')");
+        st.execute("match (c:company '{\"name\":\"bitnine\"}') "
+                + "create (c)-[:employee]"
+                + "->(:person '{\"name\":\"jsyang\"}')");
+        st.execute("match (c:company '{\"name\":\"bitnine\"}') "
+                + ", (p:person '{\"name\":\"ktlee\"}') "
+                + "create (c)-[:employee]->(p)");
+        st.execute("match (m:person '{\"name\":\"kskim\"}')"
+                +", (p:person '{\"name\":\"jsyang\"}') "
+                +"create (m)-[:manage]->(p)");
     }
 
     public void tearDown() throws Exception {
-        st.execute("drop vlabel person");
-        st.execute("drop elabel employee");
+        dropSchema();
         st.close();
         TestUtil.closeDB(con);
     }
 
+    private static String vnames[] = { "bitnine", "kskim", "ktlee" };
+    private static String elabels[] = { "employee", "manage" };
+
     public void testPath() throws Exception {
-        ResultSet rs = st.executeQuery("MATCH p=()-[]->() RETURN p");
+        ResultSet rs = st.executeQuery("MATCH p=()-[]->()-[]->('{\"name\":\"ktlee\"}') RETURN p");
         while (rs.next()) {
             Path p = (Path)rs.getObject("p");
-            System.out.println("path: " + p.toString());
-            System.out.println("|- start node: " + p.start().toString());
+            int i = 0;
             for (Vertex v : p.vertexs()) {
-                System.out.println("|- vertex: " + v.toString());
+                assertEquals(vnames[i++], v.getProperty().getString("name"));
             }
-            for (Edge v : p.edges()) {
-                System.out.println("|- edge: " + v.toString());
+            i = 0;
+            for (Edge e : p.edges()) {
+                assertEquals(elabels[i++], e.getLabel());
             }
-            System.out.println("`- length: " + p.length());
+            assertEquals(2, p.length());
         }
         rs.close();
     }
