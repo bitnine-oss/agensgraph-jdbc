@@ -15,16 +15,16 @@ import java.util.regex.Pattern;
 
 public class Vertex extends PGobject implements Serializable, Closeable {
     private static final Pattern _pattern;
-
-    private GID vid;
-    private String properties;
-    private JsonObject props;
-
     static {
-        _pattern = Pattern.compile("\\[(\\d+):(\\d+)\\](.*)");
+        _pattern = Pattern.compile("(.+)\\[(\\d+)\\.(\\d+)\\](.*)");
     }
 
-    private Vertex() {
+    private String label;
+    private GID vid;
+    private JsonObject props;
+
+    @SuppressWarnings("WeakerAccess")
+    public Vertex() {
         setType("vertex");
     }
 
@@ -37,9 +37,13 @@ public class Vertex extends PGobject implements Serializable, Closeable {
     public void setValue(String s) throws SQLException {
         Matcher m = _pattern.matcher(s);
         if (m.find()) {
-            vid = new GID(Integer.parseInt(m.group(1)), Integer.parseInt(m.group(2)));
-            properties = m.group(3);
-            props = new JsonObject(properties);
+            label = m.group(1);
+            vid = new GID(Integer.parseInt(m.group(2)), Integer.parseInt(m.group(3)));
+            String property = m.group(4);
+            if (property == null)
+                props = null;
+            else
+                props = new JsonObject(property);
         } else {
             throw new PSQLException(GT.tr("Conversion to type {0} failed: {1}.", new Object[]{type, s}),
                     PSQLState.DATA_TYPE_MISMATCH);
@@ -47,7 +51,7 @@ public class Vertex extends PGobject implements Serializable, Closeable {
     }
 
     public String getValue() {
-        return "vertex ID:" + vid.toString() + ", properties:" + properties;
+        return label + vid.toString() + ((props == null) ? "" : props.toString());
     }
 
     @Override

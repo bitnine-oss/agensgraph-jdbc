@@ -16,6 +16,7 @@ public class TopCommaTokenizer {
         int depth = 0;
         int i;
         int s;
+        boolean inGID = false;
 
         if (null == path || 0 == path.length()) {
             return;
@@ -30,7 +31,13 @@ public class TopCommaTokenizer {
             else if ('}' == c) {
                 depth--;
             }
-            else if (0 == depth && ',' == c) {
+            else if (0 == depth && '[' == c) { // for GID
+                inGID = true;
+            }
+            else if (inGID && ']' == c) {
+                inGID = false;
+            }
+            else if (0 == depth && !inGID && ',' == c) {
                 tokens.add(path.substring(s, i));
                 s = i + 1;
             }

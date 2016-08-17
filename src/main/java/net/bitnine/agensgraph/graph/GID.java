@@ -1,26 +1,34 @@
 package net.bitnine.agensgraph.graph;
 
-public class GID {
+class GID {
     /**
      * ID of base object
      */
-    public int oid;
+    private int oid;
 
     /**
      * ID in the base object
      */
-    public int id;
+    private int id;
 
-    public GID(int oid, int id) {
+    GID(int oid, int id) {
         this.oid = oid;
         this.id = id;
     }
 
-    public GID(String oid, String id) {
+    GID(String oid, String id) {
         this(Integer.parseInt(oid), Integer.parseInt(id));
     }
 
     public String toString() {
-        return "[" + oid + ":" + id + "]";
+        return "[" + oid + "." + id + "]";
+    }
+
+    public int getOid() {
+        return oid;
+    }
+
+    public int getId() {
+        return id;
     }
 }
