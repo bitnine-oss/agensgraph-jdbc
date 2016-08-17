@@ -1,5 +1,6 @@
 package net.bitnine.agensgraph.graph;
 
+import net.bitnine.agensgraph.graph.property.JsonObject;
 import org.postgresql.util.GT;
 import org.postgresql.util.PGobject;
 import org.postgresql.util.PSQLException;
@@ -17,6 +18,7 @@ public class Edge extends PGobject implements Serializable, Closeable {
     public GID vid;
     public String label;
     public String properties;
+    private JsonObject props;
 
     static {
         _pattern = Pattern.compile(":(.+)\\[(\\d+):(\\d+)\\](.*)");
@@ -37,6 +39,7 @@ public class Edge extends PGobject implements Serializable, Closeable {
             label = m.group(1);
             vid = new GID(m.group(2), m.group(3));
             properties = m.group(4);
+            props = new JsonObject(properties);
         }
         else {
             throw new PSQLException(GT.tr("Conversion to type {0} failed: {1}.", new Object[]{type, s}),
@@ -51,5 +54,9 @@ public class Edge extends PGobject implements Serializable, Closeable {
     @Override
     public void close() throws IOException {
 
+    }
+
+    public JsonObject getProperty() {
+        return props;
     }
 }

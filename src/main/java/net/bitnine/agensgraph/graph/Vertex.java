@@ -1,5 +1,6 @@
 package net.bitnine.agensgraph.graph;
 
+import net.bitnine.agensgraph.graph.property.JsonObject;
 import org.postgresql.util.GT;
 import org.postgresql.util.PGobject;
 import org.postgresql.util.PSQLException;
@@ -17,6 +18,7 @@ public class Vertex extends PGobject implements Serializable, Closeable {
 
     public GID vid;
     public String properties;
+    private JsonObject props;
 
     static {
         _pattern = Pattern.compile("\\[(\\d+):(\\d+)\\](.*)");
@@ -37,6 +39,7 @@ public class Vertex extends PGobject implements Serializable, Closeable {
         if (m.find()) {
             vid = new GID(Integer.parseInt(m.group(1)), Integer.parseInt(m.group(2)));
             properties = m.group(3);
+            props = new JsonObject(properties);
         } else {
             throw new PSQLException(GT.tr("Conversion to type {0} failed: {1}.", new Object[]{type, s}),
                     PSQLState.DATA_TYPE_MISMATCH);
@@ -49,5 +52,9 @@ public class Vertex extends PGobject implements Serializable, Closeable {
 
     @Override
     public void close() throws IOException {
+    }
+
+    public JsonObject getProperty() {
+        return props;
     }
 }
