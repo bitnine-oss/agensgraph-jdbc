@@ -16,19 +16,19 @@ import java.util.regex.Pattern;
 public class Vertex extends PGobject implements Serializable, Closeable {
     private static final Pattern _pattern;
 
-    public GID vid;
-    public String properties;
+    private GID vid;
+    private String properties;
     private JsonObject props;
 
     static {
         _pattern = Pattern.compile("\\[(\\d+):(\\d+)\\](.*)");
     }
 
-    public Vertex() {
+    private Vertex() {
         setType("vertex");
     }
 
-    public Vertex(String s) throws SQLException {
+    Vertex(String s) throws SQLException {
         this();
         setValue(s);
     }

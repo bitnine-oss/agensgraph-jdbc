@@ -15,20 +15,20 @@ import java.util.regex.Pattern;
 
 public class Edge extends PGobject implements Serializable, Closeable {
     private static Pattern _pattern;
-    public GID vid;
-    public String label;
-    public String properties;
+    private GID vid;
+    private String label;
+    private String properties;
     private JsonObject props;
 
     static {
         _pattern = Pattern.compile(":(.+)\\[(\\d+):(\\d+)\\](.*)");
     }
 
-    public Edge() {
+    private Edge() {
         setType("edge");
     }
 
-    public Edge(String s) throws SQLException {
+    Edge(String s) throws SQLException {
         this();
         setValue(s);
     }
