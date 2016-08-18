@@ -20,7 +20,6 @@ public class Edge extends PGobject implements Serializable, Closeable {
     private GID startVid;
     private GID endVid;
     private String label;
-    private String properties;
     private JsonObject props;
 
     @SuppressWarnings("WeakerAccess")

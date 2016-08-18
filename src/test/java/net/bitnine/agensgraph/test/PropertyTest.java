@@ -1,13 +1,13 @@
 package net.bitnine.agensgraph.test;
 
 import junit.framework.TestCase;
+import net.bitnine.agensgraph.graph.property.Jsonb;
 import net.bitnine.agensgraph.graph.Vertex;
 import net.bitnine.agensgraph.graph.property.JsonArray;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
-import java.util.InputMismatchException;
 
 public class PropertyTest extends TestCase {
 
@@ -65,13 +65,11 @@ public class PropertyTest extends TestCase {
             Long age = n.getProperty().getLong("age");
             assertEquals(null, age);
         }
-        // TODO array value
-        /*
-            rs = st.executeQuery("MATCH (n)-['{\"no\":2}']->(m) RETURN (m).hobbies as hobbies");
+        rs = st.executeQuery("MATCH (n)-['{\"no\":2}']->(m) RETURN (m).hobbies as hobbies");
         while (rs.next()) {
-            PGobject o = (PGobject)rs.getObject("hobbies");
+            Jsonb val = (Jsonb)rs.getObject("hobbies");
+            assertEquals("reading", val.ja().getString(0));
         }
-        */
         rs.close();
     }
 }

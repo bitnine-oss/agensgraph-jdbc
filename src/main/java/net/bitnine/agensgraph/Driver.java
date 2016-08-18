@@ -272,6 +272,7 @@ public class Driver implements java.sql.Driver {
         props.setProperty("datatype.vertex", "net.bitnine.agensgraph.graph.Vertex");
         props.setProperty("datatype.edge", "net.bitnine.agensgraph.graph.Edge");
         props.setProperty("datatype.graphpath", "net.bitnine.agensgraph.graph.Path");
+        props.setProperty("datatype.jsonb", "net.bitnine.agensgraph.graph.property.Jsonb");
         try {
             if (logger.logDebug()) {
                 logger.debug("Connecting with URL: " + url);
