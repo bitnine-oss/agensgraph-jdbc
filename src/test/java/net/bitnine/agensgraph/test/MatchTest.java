@@ -1,14 +1,11 @@
 package net.bitnine.agensgraph.test;
 
-import org.junit.BeforeClass;
-import org.junit.AfterClass;
-
 import junit.framework.TestCase;
+import net.bitnine.agensgraph.graph.Vertex;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
-import java.util.Properties;
 
 public class MatchTest extends TestCase {
 
@@ -20,42 +17,56 @@ public class MatchTest extends TestCase {
         con.setAutoCommit(true);
         st = con.createStatement();
         try {
-            st.execute("drop vlabel person");
-            st.execute("drop elabel employee");
+            dropSchema();
         }
-        catch (Exception e) {}
+        catch (Exception ignored) {}
+        st.execute("create vlabel company");
         st.execute("create vlabel person");
         st.execute("create elabel employee");
+        st.execute("create elabel manage");
         create();
     }
 
+    private void dropSchema() throws Exception {
+        st.execute("drop vlabel company");
+        st.execute("drop vlabel person");
+        st.execute("drop elabel employee");
+        st.execute("drop elabel manage");
+    }
+
     private void create() throws Exception {
-        st.execute("create (:person '{\"name\":\"bitnine\"}')"
-                + "-[:employee '{\"prop\":\"employee\"}']"
-                + "->(:person '{\"name\":\"jsyang\"}')"
-                + "-[:employee '{\"prop\":\"manage\"}']"
-                + "->(:person '{\"name\":\"someone\"}')");
-        st.execute("match (p:person '{\"name\":\"bitnine\"}')"
-                + "create (p)-[:employee '{\"prop\":\"branch\"}']"
-                + "->(:person '{\"name\":\"tree\"}')");
+        st.execute("create (:company '{\"name\":\"bitnine\"}')"
+                + "-[:employee]"
+                + "->(:person '{\"name\":\"kskim\"}')"
+                + "-[:manage]"
+                + "->(:person '{\"name\":\"ktlee\"}')");
+        st.execute("match (c:company '{\"name\":\"bitnine\"}') "
+                + "create (c)-[:employee]"
+                + "->(:person '{\"name\":\"jsyang\"}')");
+        st.execute("match (c:company '{\"name\":\"bitnine\"}') "
+                + ", (p:person '{\"name\":\"ktlee\"}') "
+                + "create (c)-[:employee]->(p)");
+        st.execute("match (m:person '{\"name\":\"kskim\"}')"
+                +", (p:person '{\"name\":\"jsyang\"}') "
+                +"create (m)-[:manage]->(p)");
     }
 
     public void tearDown() throws Exception {
-        st.execute("drop vlabel person");
-        st.execute("drop elabel employee");
+        dropSchema();
         st.close();
         TestUtil.closeDB(con);
     }
 
     public void testMatch() throws Exception {
-        ResultSet rs = st.executeQuery("MATCH (n)<-[r]-(m), (m)-[s]->(q) RETURN n, r, m, s, q");
+        ResultSet rs = st.executeQuery("MATCH (c)-[e]->(p1)-[m]->(p2) RETURN p1, p2");
         while (rs.next()) {
-            String n = rs.getObject("n").toString();
-            String r = rs.getObject("r").toString();
-            String m = rs.getObject("m").toString();
-            String s = rs.getObject("s").toString();
-            String q = rs.getObject("q").toString();
-            System.out.println("row: " + n + ", " + r + ", " + m + ", " + s + ", " + q);
+            Vertex boss = (Vertex)rs.getObject("p1");
+            assertEquals("person", boss.getLabel());
+            assertEquals("kskim", boss.getProperty().getString("name"));
+            Vertex member = (Vertex)rs.getObject("p2");
+            String memberName = member.getProperty().getString("name");
+            //FIXME use ORDER By clause
+            assertTrue(memberName.equals("ktlee") || memberName.equals("jsyang"));
         }
         rs.close();
     }

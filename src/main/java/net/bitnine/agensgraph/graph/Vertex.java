@@ -1,5 +1,6 @@
 package net.bitnine.agensgraph.graph;
 
+import net.bitnine.agensgraph.graph.property.JsonObject;
 import org.postgresql.util.GT;
 import org.postgresql.util.PGobject;
 import org.postgresql.util.PSQLException;
@@ -14,25 +15,20 @@ import java.util.regex.Pattern;
 
 public class Vertex extends PGobject implements Serializable, Closeable {
     private static final Pattern _pattern;
-
-    public GID vid;
-    public String properties;
-
     static {
-        _pattern = Pattern.compile("\\[(\\d+):(\\d+)\\](.*)");
+        _pattern = Pattern.compile("(.+)\\[(\\d+)\\.(\\d+)\\](.*)");
     }
 
+    private String label;
+    private GID vid;
+    private JsonObject props;
+
+    @SuppressWarnings("WeakerAccess")
     public Vertex() {
         setType("vertex");
     }
 
-    public Vertex(GID vid, String properties) {
-        this();
-        this.vid = vid;
-        this.properties = properties;
-    }
-
-    public Vertex(String s) throws SQLException {
+    Vertex(String s) throws SQLException {
         this();
         setValue(s);
     }
@@ -41,8 +37,13 @@ public class Vertex extends PGobject implements Serializable, Closeable {
     public void setValue(String s) throws SQLException {
         Matcher m = _pattern.matcher(s);
         if (m.find()) {
-            vid = new GID(Integer.parseInt(m.group(1)), Integer.parseInt(m.group(2)));
-            properties = m.group(3);
+            label = m.group(1);
+            vid = new GID(Integer.parseInt(m.group(2)), Integer.parseInt(m.group(3)));
+            String property = m.group(4);
+            if (property == null)
+                props = null;
+            else
+                props = new JsonObject(property);
         } else {
             throw new PSQLException(GT.tr("Conversion to type {0} failed: {1}.", new Object[]{type, s}),
                     PSQLState.DATA_TYPE_MISMATCH);
@@ -50,10 +51,23 @@ public class Vertex extends PGobject implements Serializable, Closeable {
     }
 
     public String getValue() {
-        return "vertex ID:" + vid.toString() + ", properties:" + properties;
+        return label + vid.toString() + ((props == null) ? "" : props.toString());
     }
 
     @Override
     public void close() throws IOException {
+    }
+
+    public String getLabel() {
+        return label;
+    }
+
+    public JsonObject getProperty() {
+        return props;
+    }
+
+    @Override
+    public String toString() {
+        return getValue();
     }
 }

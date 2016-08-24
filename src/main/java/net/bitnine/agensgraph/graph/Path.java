@@ -28,10 +28,9 @@ public class Path
     @Override
     public void setValue(String s) throws SQLException {
         this.s = s;
-        String p = new String(s);
-        vertexs = new ArrayList<Vertex>();
-        edges = new ArrayList<Edge>();
-        p = PGtokenizer.removeBox(p);
+        vertexs = new ArrayList<>();
+        edges = new ArrayList<>();
+        String p = PGtokenizer.removeBox(this.s);
         TopCommaTokenizer t;
         try {
             t = new TopCommaTokenizer(p);
@@ -76,10 +75,10 @@ public class Path
     }
 
     public Iterable<Vertex> vertexs() {
-        return (Iterable<Vertex>)vertexs;
+        return vertexs;
     }
 
     public Iterable<Edge> edges() {
-        return (Iterable<Edge>)edges;
+        return edges;
     }
 }

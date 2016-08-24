@@ -173,7 +173,7 @@ public class TestUtil {
   public static Properties loadPropertyFiles(String... names) {
     Properties p = new Properties();
     for (String name : names) {
-      for (int i = 0; i < 2; i++) {
+      for (int i = 0; i < 1; i++) {
         // load x.properties, then x.local.properties
         if (i == 1 && name.endsWith(".properties") && !name.endsWith(".local.properties")) {
           name = name.replaceAll("\\.properties$", ".local.properties");
