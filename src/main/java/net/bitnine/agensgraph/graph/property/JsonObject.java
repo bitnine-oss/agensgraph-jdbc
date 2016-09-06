@@ -8,21 +8,24 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-public class JsonObject {
+public class JsonObject extends Jsonb {
     JSONObject props;
 
     public JsonObject() {
         props = new JSONObject();
+        setJsonValue(this);
     }
 
     public JsonObject(String s) {
         props = (JSONObject) JSONValue.parse(s);
         if (props == null)
             throw new IllegalArgumentException("invalid json object format string");
+        setJsonValue(this);
     }
 
     JsonObject(JSONObject json) {
         props = json;
+        setJsonValue(this);
     }
 
     public static JsonObject create() {
@@ -43,7 +46,7 @@ public class JsonObject {
             if (key == null)
                 throw new IllegalArgumentException("'null' key is not allowed in JsonObject");
             Object value = entry.getValue();
-            if (Jsonb.isJsonValue(value))
+            if (isJsonValue(value))
                 jobj.put(key, value);
             else
                 throw new IllegalArgumentException("invalid json value type");
@@ -171,7 +174,7 @@ public class JsonObject {
     }
 
     public JsonObject put(String name, Object value) {
-        if (Jsonb.isJsonValue(value))
+        if (isJsonValue(value))
             props.put(name, value);
         else
             throw new IllegalArgumentException("invalid json value type");

@@ -8,21 +8,24 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-public class JsonArray {
+public class JsonArray extends Jsonb {
     private JSONArray array;
 
     public JsonArray() {
         array = new JSONArray();
+        setJsonValue(this);
     }
 
     public JsonArray(String s) {
         array = (JSONArray) JSONValue.parse(s);
         if (array == null)
             throw new IllegalArgumentException("invalid json array format string");
+        setJsonValue(this);
     }
 
     protected JsonArray(JSONArray json) {
         array = json;
+        setJsonValue(this);
     }
 
     public static JsonArray create() {
@@ -55,7 +58,7 @@ public class JsonArray {
 
             if (value == null)
                 array.addNull();
-            else if (Jsonb.isJsonValue(value))
+            else if (isJsonValue(value))
                 array.add(value);
             else
                 throw new IllegalArgumentException("invalid json value type: " + value.getClass());
@@ -168,7 +171,7 @@ public class JsonArray {
     }
 
     public JsonArray add(Object value) {
-        if (Jsonb.isJsonValue(value))
+        if (isJsonValue(value))
             array.add(value);
         else
             throw new IllegalArgumentException("invalid json value type");

@@ -52,6 +52,9 @@ public class Jsonb extends PGobject implements Serializable, Closeable {
         else if (value instanceof String) {
             type = JsonType.STRING;
         }
+        else if (value instanceof Integer) {
+            type = JsonType.LONG;
+        }
         else if (value instanceof Long) {
             type = JsonType.LONG;
         }
