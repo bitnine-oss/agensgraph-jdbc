@@ -19,40 +19,56 @@ public class Jsonb extends PGobject implements Serializable, Closeable {
         setType("jsonb");
     }
 
+    public Jsonb(Object value) {
+        setType("jsonb");
+        setJsonValue(value);
+    }
+
     @Override
     public void setValue(String value) throws SQLException {
-        if (value == null) {
-            jsonValue = null;
-            type = JsonType.NULL;
-            return;
-        }
         Object o = JSONValue.parse(value);
         if (o instanceof JSONObject) {
             jsonValue = new JsonObject((JSONObject)o);
-            type = JsonType.OBJECT;
         }
         else if (o instanceof JSONArray) {
             jsonValue = new JsonArray((JSONArray)o);
-            type = JsonType.ARRAY;
         }
         else {
             jsonValue = o;
-            if (o instanceof String) {
-                type = JsonType.STRING;
-            }
-            else if (o instanceof Long) {
-                type = JsonType.LONG;
-            }
-            else if (o instanceof Double) {
-                type = JsonType.DOUBLE;
-            }
-            else if (o instanceof Boolean) {
-                type = JsonType.BOOLEAN;
-            }
-            else {
-                throw new SQLException("invalid json string");
-            }
         }
+        setJsonType(jsonValue);
+    }
+
+    private void setJsonType(Object value) {
+        if (value == null) {
+            type = JsonType.NULL;
+        }
+        if (value instanceof JsonObject) {
+            type = JsonType.OBJECT;
+        }
+        else if (value instanceof JsonArray) {
+            type = JsonType.ARRAY;
+        }
+        else if (value instanceof String) {
+            type = JsonType.STRING;
+        }
+        else if (value instanceof Long) {
+            type = JsonType.LONG;
+        }
+        else if (value instanceof Double) {
+            type = JsonType.DOUBLE;
+        }
+        else if (value instanceof Boolean) {
+            type = JsonType.BOOLEAN;
+        }
+        else {
+            throw new IllegalArgumentException("invalid json type");
+        }
+    }
+
+    public void setJsonValue(Object value) {
+        setJsonType(value);
+        jsonValue = value;
     }
 
     @Override
@@ -104,5 +120,16 @@ public class Jsonb extends PGobject implements Serializable, Closeable {
 
     public JsonType getJsonType() {
         return type;
+    }
+
+    public static boolean isJsonValue(Object value) {
+        return (value == null ||
+                value instanceof JsonObject ||
+                value instanceof JsonArray ||
+                value instanceof String ||
+                value instanceof Integer ||
+                value instanceof Long ||
+                value instanceof Double ||
+                value instanceof Boolean);
     }
 }
