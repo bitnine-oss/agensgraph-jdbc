@@ -29,7 +29,7 @@ public class WhereTest extends TestCase {
     }
 
     private void create() throws Exception {
-        st.execute("CREATE (:person '{ \"name\": \"Emil\", \"from\": \"Sweden\", \"klout\": 99 }')");
+        st.execute("CREATE (:person { 'name': 'Emil', 'from': 'Sweden', 'klout': 99 })");
     }
 
     private void dropSchema() throws Exception {
@@ -81,6 +81,21 @@ public class WhereTest extends TestCase {
         pstmt.close();
     }
 
+    public void testWhereBind_Json() throws Exception {
+        PreparedStatement pstmt = con.prepareStatement("MATCH ( ee:person ) WHERE (ee).name = ? return ee");
+        JsonObject nameMatcher = new JsonObject();
+        nameMatcher.put("name", "Emil");
+        pstmt.setObject(1, nameMatcher);
+        ResultSet rs = pstmt.executeQuery();
+        while (rs.next()) {
+            Vertex n = (Vertex)rs.getObject("ee");
+            assertEquals(99, (int)n.getProperty().getInt("klout"));
+        }
+        assertFalse(rs.next());
+        rs.close();
+        pstmt.close();
+    }
+
     public void testMatchBind_Str() throws Exception {
         PreparedStatement pstmt = con.prepareStatement("MATCH ( ee:person ? ) return ee");
         pstmt.setString(1, "{ \"name\": \"Emil\" }");
@@ -96,9 +111,9 @@ public class WhereTest extends TestCase {
 
     public void testMatchBind_Json() throws Exception {
         PreparedStatement pstmt = con.prepareStatement("MATCH ( ee:person ? ) return ee");
-        JsonObject nameMatcher = new JsonObject();
-        nameMatcher.put("name", "Emil");
-        pstmt.setObject(1, nameMatcher);
+        JsonObject nameFilter = new JsonObject();
+        nameFilter.put("name", "Emil");
+        pstmt.setObject(1, nameFilter);
         ResultSet rs = pstmt.executeQuery();
         while (rs.next()) {
             Vertex n = (Vertex)rs.getObject("ee");
