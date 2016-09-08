@@ -2,6 +2,7 @@ package net.bitnine.agensgraph.test;
 
 import junit.framework.TestCase;
 import net.bitnine.agensgraph.graph.property.JsonObject;
+import net.bitnine.agensgraph.graph.property.Jsonb;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -49,5 +50,17 @@ public class CreateTest extends TestCase {
         pstmt.setObject(1, ktlee);
         boolean inserted = pstmt.execute();
         assertFalse(inserted);
+    }
+
+    public void testCreateWithBind_PrimitiveProp() throws Exception {
+        PreparedStatement pstmt = con.prepareStatement("CREATE ( :person ? )");
+        pstmt.setObject(1, new Jsonb(10));
+        try {
+            pstmt.execute();
+            assertTrue(false);
+        }
+        catch (Exception e) {
+            assertEquals("ERROR: jsonb object is expected for property map", e.getMessage());
+        }
     }
 }
