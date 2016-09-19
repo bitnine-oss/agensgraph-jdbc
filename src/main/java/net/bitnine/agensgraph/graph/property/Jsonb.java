@@ -76,7 +76,10 @@ public class Jsonb extends PGobject implements Serializable, Closeable {
 
     @Override
     public String getValue() {
-        return jsonValue.toString();
+        if (JsonType.STRING == getJsonType())
+            return "\""+ jsonValue.toString() + "\"";
+        else
+            return jsonValue.toString();
     }
 
     @Override
@@ -134,5 +137,9 @@ public class Jsonb extends PGobject implements Serializable, Closeable {
                 value instanceof Long ||
                 value instanceof Double ||
                 value instanceof Boolean);
+    }
+
+    public String toString() {
+        return getValue();
     }
 }

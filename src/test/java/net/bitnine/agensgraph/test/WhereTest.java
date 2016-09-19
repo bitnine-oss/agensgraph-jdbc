@@ -2,7 +2,6 @@ package net.bitnine.agensgraph.test;
 
 import junit.framework.TestCase;
 import net.bitnine.agensgraph.graph.Vertex;
-import net.bitnine.agensgraph.graph.property.JsonArray;
 import net.bitnine.agensgraph.graph.property.JsonObject;
 import net.bitnine.agensgraph.graph.property.Jsonb;
 
@@ -62,20 +61,18 @@ public class WhereTest extends TestCase {
         PreparedStatement pstmt = con.prepareStatement("MATCH (ee:person) WHERE (ee).from = to_jsonb(?) return ee");
         pstmt.setString(1, "Sweden");
         ResultSet rs = pstmt.executeQuery();
-        while (rs.next()) {
-            Vertex n = (Vertex) rs.getObject("ee");
-            assertEquals(99, (int) n.getProperty().getInt("klout"));
-        }
+        assertTrue(rs.next());
+        Vertex n = (Vertex) rs.getObject("ee");
+        assertEquals(99, (int) n.getProperty().getInt("klout"));
         assertFalse(rs.next());
         rs.close();
 
         pstmt = con.prepareStatement("MATCH ( ee:person {'name': ? } ) return ee");
         pstmt.setString(1, "Emil");
         rs = pstmt.executeQuery();
-        while (rs.next()) {
-            Vertex n = (Vertex) rs.getObject("ee");
-            assertEquals(99, (int) n.getProperty().getInt("klout"));
-        }
+        assertTrue(rs.next());
+        n = (Vertex) rs.getObject("ee");
+        assertEquals(99, (int) n.getProperty().getInt("klout"));
         assertFalse(rs.next());
         rs.close();
         pstmt.close();
@@ -83,14 +80,13 @@ public class WhereTest extends TestCase {
 
     public void testWhereBind_Json() throws Exception {
         PreparedStatement pstmt = con.prepareStatement("MATCH ( ee:person ) WHERE (ee).name = ? return ee");
-        JsonObject nameMatcher = new JsonObject();
-        nameMatcher.put("name", "Emil");
-        pstmt.setObject(1, nameMatcher);
+        Jsonb name = new Jsonb();
+        name.setJsonValue(new String("Emil"));
+        pstmt.setObject(1, name);
         ResultSet rs = pstmt.executeQuery();
-        while (rs.next()) {
-            Vertex n = (Vertex)rs.getObject("ee");
-            assertEquals(99, (int)n.getProperty().getInt("klout"));
-        }
+        assertTrue(rs.next());
+        Vertex n = (Vertex)rs.getObject("ee");
+        assertEquals(99, (int)n.getProperty().getInt("klout"));
         assertFalse(rs.next());
         rs.close();
         pstmt.close();
