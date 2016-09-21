@@ -9,6 +9,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.Serializable;
 import java.sql.SQLException;
+import java.util.regex.Matcher;
 
 public class Jsonb extends PGobject implements Serializable, Closeable {
 
@@ -77,7 +78,7 @@ public class Jsonb extends PGobject implements Serializable, Closeable {
     @Override
     public String getValue() {
         if (JsonType.STRING == getJsonType())
-            return "\""+ jsonValue.toString() + "\"";
+            return "\""+ jsonValue.toString().replaceAll("\"", Matcher.quoteReplacement("\\\"")) + "\"";
         else
             return jsonValue.toString();
     }

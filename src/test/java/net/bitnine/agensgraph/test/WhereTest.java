@@ -81,7 +81,7 @@ public class WhereTest extends TestCase {
     public void testWhereBind_Json() throws Exception {
         PreparedStatement pstmt = con.prepareStatement("MATCH ( ee:person ) WHERE (ee).name = ? return ee");
         Jsonb name = new Jsonb();
-        name.setJsonValue(new String("Emil"));
+        name.setJsonValue("Emil");
         pstmt.setObject(1, name);
         ResultSet rs = pstmt.executeQuery();
         assertTrue(rs.next());
