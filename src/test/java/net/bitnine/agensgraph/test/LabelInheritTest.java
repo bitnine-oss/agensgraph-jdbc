@@ -17,10 +17,11 @@ public class LabelInheritTest extends TestCase {
         con.setAutoCommit(true);
         st = con.createStatement();
         try {
-            st.execute("drop vlabel child");
-            st.execute("drop vlabel parent");
+            dropSchema();
         }
         catch (Exception ignored) {}
+        st.execute("create graph u");
+        st.execute("set graph_path = u");
         st.execute("create vlabel parent");
         st.execute("create vlabel child inherits (parent)");
         create();
@@ -31,9 +32,11 @@ public class LabelInheritTest extends TestCase {
         st.execute("create (:child '{\"name\":\"son\"}')");
     }
 
+    private void dropSchema() throws Exception {
+        st.execute("drop graph u cascade");
+    }
+
     public void tearDown() throws Exception {
-        st.execute("drop vlabel child");
-        st.execute("drop vlabel parent");
         st.close();
         TestUtil.closeDB(con);
     }

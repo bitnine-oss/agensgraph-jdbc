@@ -21,11 +21,13 @@ public class CreateTest extends TestCase {
             dropSchema();
         }
         catch (Exception ignored) {}
+        st.execute("create graph u");
+        st.execute("set graph_path = u");
         st.execute("create vlabel person");
     }
 
     private void dropSchema() throws Exception {
-        st.execute("drop vlabel person");
+        st.execute("drop graph u cascade");
     }
 
     public void tearDown() throws Exception {

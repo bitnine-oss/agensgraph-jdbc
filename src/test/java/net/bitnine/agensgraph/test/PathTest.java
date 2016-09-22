@@ -22,6 +22,8 @@ public class PathTest extends TestCase {
             dropSchema();
         }
         catch (Exception ignored) {}
+        st.execute("create graph u");
+        st.execute("set graph_path = u");
         st.execute("create vlabel company");
         st.execute("create vlabel person");
         st.execute("create elabel employee");
@@ -30,10 +32,7 @@ public class PathTest extends TestCase {
     }
 
     private void dropSchema() throws Exception {
-        st.execute("drop vlabel company");
-        st.execute("drop vlabel person");
-        st.execute("drop elabel employee");
-        st.execute("drop elabel manage");
+        st.execute("drop graph u cascade");
     }
 
     private void create() throws Exception {
