@@ -8,22 +8,58 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-public class JsonObject {
-    private JSONObject props;
+public class JsonObject extends Jsonb {
+    JSONObject props;
+
+    public JsonObject() {
+        props = new JSONObject();
+        setJsonValue(this);
+    }
 
     public JsonObject(String s) {
         props = (JSONObject) JSONValue.parse(s);
+        if (props == null)
+            throw new IllegalArgumentException("invalid json object format string");
+        setJsonValue(this);
     }
 
     JsonObject(JSONObject json) {
         props = json;
+        setJsonValue(this);
+    }
+
+    public static JsonObject create() {
+        return new JsonObject();
+    }
+
+    public static JsonObject create(String s) {
+        return new JsonObject(s);
+    }
+
+    public static JsonObject create(Map<String, ?> map) {
+        if (map == null || map.isEmpty())
+            return new JsonObject();
+
+        JsonObject jobj = new JsonObject();
+        for (Map.Entry<String, ?> entry : map.entrySet()) {
+            String key = entry.getKey();
+            if (key == null)
+                throw new IllegalArgumentException("'null' key is not allowed in JsonObject");
+            Object value = entry.getValue();
+            if (isJsonValue(value))
+                jobj.put(key, value);
+            else
+                throw new IllegalArgumentException("invalid json value type");
+        }
+
+        return jobj;
     }
 
     public boolean containsKey(String name) {
         return props.containsKey(name);
     }
 
-    public boolean containsValue(String value) {
+    public boolean containsValue(Object value) {
         return props.containsValue(value);
     }
 
@@ -95,5 +131,53 @@ public class JsonObject {
 
     public String toString() {
         return props.toString();
+    }
+
+    public JsonObject put(String name, boolean value) {
+        props.put(name, value);
+        return this;
+    }
+
+    public JsonObject put(String name, int value) {
+        props.put(name, new Long(value));
+        return this;
+    }
+
+    public JsonObject put(String name, long value) {
+        props.put(name, value);
+        return this;
+    }
+
+    public JsonObject put(String name, double value) {
+        props.put(name, value);
+        return this;
+    }
+
+    public JsonObject put(String name, String value) {
+        props.put(name, value);
+        return this;
+    }
+
+    public JsonObject put(String name, JsonObject value) {
+        props.put(name, value);
+        return this;
+    }
+
+    public JsonObject put(String name, JsonArray value) {
+        props.put(name, value);
+        return this;
+    }
+
+    public JsonObject putNull(String name) {
+        props.put(name, null);
+        return this;
+    }
+
+    public JsonObject put(String name, Object value) {
+        if (isJsonValue(value))
+            props.put(name, value);
+        else
+            throw new IllegalArgumentException("invalid json value type");
+        return this;
     }
 }
