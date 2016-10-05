@@ -1,6 +1,6 @@
 package net.bitnine.agensgraph.graph;
 
-class GID {
+public class GID {
     /**
      * ID of base object
      */

@@ -70,4 +70,8 @@ public class Vertex extends PGobject implements Serializable, Closeable {
     public String toString() {
         return getValue();
     }
+
+    public GID getVertexId() {
+        return vid;
+    }
 }

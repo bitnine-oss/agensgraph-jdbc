@@ -75,4 +75,16 @@ public class Edge extends PGobject implements Serializable, Closeable {
     public String toString() {
         return getValue();
     }
+
+    public GID getEdgeId() {
+        return eid;
+    }
+
+    public GID getStartVertexId() {
+        return startVid;
+    }
+
+    public GID getEndVertexid() {
+        return endVid;
+    }
 }
