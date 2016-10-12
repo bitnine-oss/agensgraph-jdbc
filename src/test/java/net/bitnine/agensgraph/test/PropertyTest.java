@@ -67,13 +67,13 @@ public class PropertyTest extends TestCase {
             Long age = n.getProperty().getLong("age");
             assertEquals(null, age);
         }
-        rs = st.executeQuery("MATCH (n)-['{\"no\":2}']->(m) RETURN (m).hobbies as hobbies");
+        rs = st.executeQuery("MATCH (n)-['{\"no\":2}']->(m) RETURN m.hobbies::jsonb as hobbies");
         while (rs.next()) {
             Jsonb val = (Jsonb)rs.getObject("hobbies");
             assertEquals("reading", val.ja().getString(0));
         }
-        rs = st.executeQuery("MATCH (ee:person) WHERE (ee).klout = to_jsonb(99::int) "
-                + "RETURN (ee).name, (ee).name::text");
+        rs = st.executeQuery("MATCH (ee:person) WHERE ee.klout::int = 99 "
+                + "RETURN to_jsonb(ee.name::text), ee.name");
         assertTrue(rs.next());
         Object val = rs.getObject(1);
         assertTrue(val instanceof Jsonb);
@@ -82,7 +82,7 @@ public class PropertyTest extends TestCase {
         String name = jval.getString();
         assertEquals("Emil", name);;
         String qname = (String)rs.getString(2);
-        assertEquals("\"Emil\"", qname);
+        assertEquals("Emil", qname);
         assertFalse(rs.next());
         rs.close();
     }

@@ -44,23 +44,23 @@ public class WhereTest extends TestCase {
     }
 
     public void testWhere() throws Exception {
-        ResultSet rs = st.executeQuery("MATCH (ee:person) WHERE (ee).name = to_jsonb('Emil'::text) return ee");
+        ResultSet rs = st.executeQuery("MATCH (ee:person) WHERE ee.name = 'Emil' return ee");
         while (rs.next()) {
             Vertex n = (Vertex) rs.getObject("ee");
             assertEquals(99, (int) n.getProperty().getInt("klout"));
         }
-        rs = st.executeQuery("MATCH (ee:person) WHERE (ee).klout = to_jsonb(99::int) return ee");
+        rs = st.executeQuery("MATCH (ee:person) WHERE ee.klout::int = 99 return ee");
         while (rs.next()) {
             Vertex n = (Vertex) rs.getObject("ee");
             assertEquals(99, (int) n.getProperty().getInt("klout"));
         }
-        rs = st.executeQuery("MATCH (ee:person) WHERE (ee).from = to_jsonb('Korea'::text) return ee");
+        rs = st.executeQuery("MATCH (ee:person) WHERE ee.from = 'Korea' return ee");
         assertFalse(rs.next());
         rs.close();
     }
 
     public void testWhereBind() throws Exception {
-        PreparedStatement pstmt = con.prepareStatement("MATCH (ee:person) WHERE (ee).from = to_jsonb(?) return ee");
+        PreparedStatement pstmt = con.prepareStatement("MATCH (ee:person) WHERE ee.from = ? return ee");
         pstmt.setString(1, "Sweden");
         ResultSet rs = pstmt.executeQuery();
         assertTrue(rs.next());
@@ -81,10 +81,8 @@ public class WhereTest extends TestCase {
     }
 
     public void testWhereBind_Json() throws Exception {
-        PreparedStatement pstmt = con.prepareStatement("MATCH ( ee:person ) WHERE (ee).name = ? return ee");
-        Jsonb name = new Jsonb();
-        name.setJsonValue("Emil");
-        pstmt.setObject(1, name);
+        PreparedStatement pstmt = con.prepareStatement("MATCH ( ee:person ) WHERE ee.name = ? return ee");
+        pstmt.setString(1, "Emil");
         ResultSet rs = pstmt.executeQuery();
         assertTrue(rs.next());
         Vertex n = (Vertex)rs.getObject("ee");
@@ -95,7 +93,7 @@ public class WhereTest extends TestCase {
     }
 
     public void testMatchBind_Str() throws Exception {
-        PreparedStatement pstmt = con.prepareStatement("MATCH ( ee:person ? ) return ee");
+        PreparedStatement pstmt = con.prepareStatement("MATCH ( ee:person =to_jsonb(?) ) return ee");
         pstmt.setString(1, "{ \"name\": \"Emil\" }");
         ResultSet rs = pstmt.executeQuery();
         while (rs.next()) {
