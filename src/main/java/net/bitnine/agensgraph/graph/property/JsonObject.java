@@ -91,6 +91,8 @@ public class JsonObject extends Jsonb {
         return props.get(name);
     }
 
+    public boolean isNull(String name) { return null == props.get(name); }
+
     public JsonObject getObject(String name) {
         return new JsonObject((JSONObject)get(name));
     }

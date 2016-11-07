@@ -95,6 +95,8 @@ public class JsonArray extends Jsonb {
         return array.get(index);
     }
 
+    public boolean isNull(int index) { return null == get(index); }
+
     public JsonObject getObject(int index) {
         return new JsonObject((JSONObject) get(index));
     }
