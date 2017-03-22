@@ -1,10 +1,25 @@
 <img src="http://cfile26.uf.tistory.com/image/251E994857553C91236F07" />
 
-# Agensgraph JDBC driver
+# AgensGraph JDBC driver
 
 ## Introduction ##
 
-Agensgraph's JDBC driver is based on PostgreSQL JDBC Driver and offering Java Driver for Java application developer. Thus, When users develop some application, there is little difference between using the API of Agensgraph Java Driver and Postgres JDBC Driver. The only difference is that Agensgraph uses Cypher query language instead of SQL and utilizes Graph Data as data type like Vertex, Edge and Path.
+AgensGraph's JDBC driver is based on PostgreSQL JDBC Driver and offering Java Driver for Java application developer. Thus, When users develop some application, there is little difference between using the API of AgensGraph Java Driver and Postgres JDBC Driver. The only difference is that AgensGraph uses Cypher query language instead of SQL and utilizes Graph Data as data type like Vertex, Edge and Path.
+
+## Driver Download ##
+
+You can download from [bitnine.net/downloads](http://bitnine.net/downloads) or use maven as follows
+```
+<dependencies>
+  ...
+  <dependency>
+    <groupId>net.bitnine</groupId>
+    <artifactId>agensgraph-jdbc</artifactId>
+    <version>1.1.0</version>
+  </dependency>
+  ...
+</dependencies>
+```
 
 ## Usage of Java Driver ##
 
@@ -12,14 +27,14 @@ This section will handle how to use Java Driver through examples.
 
 ### Connection ###
 
-It requires two information to connect Agensgraph using Java Driver like as the way that other JDBC Drivers do. These are the name of class to be loading Java Driver and the connection string.
+It requires two information to connect AgensGraph using Java Driver like as the way that other JDBC Drivers do. These are the name of class to be loading Java Driver and the connection string.
 
 * The name of class is `net.bitnine.agensgraph.Driver`.
 * connection string consists of  sub-protocol, server, port, database.
   * `jdbc:agensgraph://`is a sub-protocal to use particular Driver and a hold value.
   * It is written in format of `jdbc:agensgraph://server:port/database` including sub-protocol.
 
-The following is an example code to connect Agensgraph. It is connected to the Agensgraph through Connection object and ready to perform the query.
+The following is an example code to connect AgensGraph. It is connected to the AgensGraph through Connection object and ready to perform the query.
 
 ```java
 import java.sql.DriverManager;
@@ -42,7 +57,7 @@ public class AgensGraphTest {
 This is an example to export Graph data using MATCH.
 
 A Cypher query is executed using `executeQuery()`. The output is ResultSet object, which is the same output format in JDBC. 
-The output of query is the ‘vertex’ type of Agensgraph. Java Driver returns this output as Vertex instance. Because Vertex class is a sub-class of JsonObject, users can obtain information from the property fields.
+The output of query is the ‘vertex’ type of AgensGraph. Java Driver returns this output as Vertex instance. Because Vertex class is a sub-class of JsonObject, users can obtain information from the property fields.
 
 ```java
 import java.sql.DriverManager;
@@ -70,7 +85,7 @@ public class AgensGraphTest {
 
 ### Create Data ###
 
-The following is an example, which is inputting a vertex with Person label to Agensgraph. 
+The following is an example, which is inputting a vertex with Person label to AgensGraph. 
 Users can input a property of a vertex using strings in Cypher queries. They are also able to be binded after making JsonObject like a following example
 
 ```java
@@ -104,8 +119,8 @@ This section is a brief explanation of Java class to support graph data.
 
 | Class      | Description |
 | ---------- | ----------- |
-| Vertex     |It is a java class corresponding to a `vertex` type in the Agensgraph. It supports accessing methods for the label and properties. |
-| Edge       | It is a java class corresponding to a `edge` type in the Agensgraph. It supports accessing methods for the label and properties. |
-| Path       | It is a java class corresponding to a `graphpath` type in the Agensgraph. It supports methods for the length of the path, and accessing for vertexes and edges in the path. |
+| Vertex     | It is a java class corresponding to a `vertex` type in the AgensGraph. It supports accessing methods for the label and properties. |
+| Edge       | It is a java class corresponding to a `edge` type in the AgensGraph. It supports accessing methods for the label and properties. |
+| Path       | It is a java class corresponding to a `graphpath` type in the AgensGraph. It supports methods for the length of the path, and accessing for vertexes and edges in the path. |
 | JsonObject | It is a java class corresponding to the property field of Vertex and Edge class. Property field is JSON class. It offers accessing methods for property values by name. As the above CREATE example, it offers methods to create or modify JSON object. |
 | JsonArray  | It is a java class in corresponding with JSON array. It offers accessing methods for the element of JSON array using index. It also offers various methods to create or modify of JSON array.|
