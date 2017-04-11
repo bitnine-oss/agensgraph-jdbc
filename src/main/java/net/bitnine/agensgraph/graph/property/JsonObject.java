@@ -21,6 +21,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -52,18 +53,22 @@ public class JsonObject extends Jsonb {
         return new JsonObject(s);
     }
 
-    public static JsonObject create(Map<String, ?> map) {
+    public static JsonObject create(Map<?, ?> map) {
         if (map == null || map.isEmpty())
             return new JsonObject();
 
         JsonObject jobj = new JsonObject();
-        for (Map.Entry<String, ?> entry : map.entrySet()) {
-            String key = entry.getKey();
+        for (Map.Entry<?, ?> entry : map.entrySet()) {
+            String key = entry.getKey().toString();
             if (key == null)
                 throw new IllegalArgumentException("'null' key is not allowed in JsonObject");
             Object value = entry.getValue();
             if (isJsonValue(value))
                 jobj.put(key, value);
+            else if (value instanceof Map)
+                jobj.put(key, JsonObject.create((Map<?, ?>) value));
+            else if (value instanceof List)
+                jobj.put(key, JsonArray.create((List<?>) value));
             else
                 throw new IllegalArgumentException("invalid json value type");
         }

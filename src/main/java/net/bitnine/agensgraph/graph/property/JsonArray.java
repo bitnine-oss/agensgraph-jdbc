@@ -23,6 +23,7 @@ import org.json.simple.JSONValue;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 public class JsonArray extends Jsonb {
     private JSONArray array;
@@ -57,6 +58,10 @@ public class JsonArray extends Jsonb {
         for (Object value : values) {
             if (Jsonb.isJsonValue(value))
                 array.add(value);
+            else if (value instanceof Map)
+                array.add(JsonObject.create((Map<?, ?>) value));
+            else if (value instanceof List)
+                array.add(JsonArray.create((List<?>) value));
             else
                 throw new IllegalArgumentException("invalid json value type: " + value.getClass());
         }
@@ -67,19 +72,16 @@ public class JsonArray extends Jsonb {
         JsonArray array = JsonArray.create();
         if (list == null || list.isEmpty())
             return array;
-
-        Iterator<?> iter = list.iterator();
-        while (iter.hasNext()) {
-            Object value = iter.next();
-
-            if (value == null)
-                array.addNull();
-            else if (isJsonValue(value))
+        for (Object value : list) {
+            if (isJsonValue(value))
                 array.add(value);
+            else if (value instanceof Map)
+                array.add(JsonObject.create((Map<?, ?>) value));
+            else if (value instanceof List)
+                array.add(JsonArray.create((List<?>) value));
             else
                 throw new IllegalArgumentException("invalid json value type: " + value.getClass());
         }
-
         return array;
     }
 

@@ -20,13 +20,14 @@ import junit.framework.TestCase;
 import net.bitnine.agensgraph.graph.property.JsonArray;
 import net.bitnine.agensgraph.graph.property.JsonObject;
 import net.bitnine.agensgraph.graph.property.Jsonb;
-import org.json.simple.JSONValue;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 public class ReturnTest extends TestCase {
@@ -71,8 +72,7 @@ public class ReturnTest extends TestCase {
         Map<String, Object> jobj = new HashMap<>();
         jobj.put("name", "ktlee");
         jobj.put("age", 41);
-        data.setJsonValue(JsonObject.create(jobj));
-        pstmt.setObject(1, data);
+        pstmt.setObject(1, JsonObject.create(jobj));
         rs = pstmt.executeQuery();
         while (rs.next()) {
             JsonObject jo = ((Jsonb)rs.getObject(1)).getJsonObject();
@@ -87,6 +87,30 @@ public class ReturnTest extends TestCase {
         while (rs.next()) {
             jo = ((Jsonb)rs.getObject(1)).getJsonObject();
             assertEquals(3, (int)jo.getArray("id").getInt(2));
+        }
+        rs.close();
+
+        List<String> hobbies = new LinkedList<String>();
+        hobbies.add("climbing");
+        hobbies.add("woodwork");
+        jobj.put("hobbies", hobbies);
+        pstmt.setObject(1, JsonObject.create(jobj));
+        rs = pstmt.executeQuery();
+        while (rs.next()) {
+            jo = ((Jsonb)rs.getObject(1)).getJsonObject();
+            assertEquals("woodwork", jo.getArray("hobbies").getString(1));
+        }
+        rs.close();
+
+        Map<String, Object> physique = new HashMap<>();
+        physique.put("height", 172);
+        physique.put("weight", 74);
+        jobj.put("physique", physique);
+        pstmt.setObject(1, JsonObject.create(jobj));
+        rs = pstmt.executeQuery();
+        while (rs.next()) {
+            jo = ((Jsonb)rs.getObject(1)).getJsonObject();
+            assertEquals(172, (int)jo.getObject("physique").getInt("height"));
         }
         rs.close();
 
