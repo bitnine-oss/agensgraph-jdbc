@@ -17,6 +17,8 @@
 package net.bitnine.agensgraph.test;
 
 import junit.framework.TestCase;
+import net.bitnine.agensgraph.graph.Edge;
+import net.bitnine.agensgraph.graph.Path;
 import net.bitnine.agensgraph.graph.Vertex;
 
 import java.sql.Connection;
@@ -83,6 +85,23 @@ public class MatchTest extends TestCase {
             //FIXME use ORDER By clause
             assertTrue(memberName.equals("ktlee") || memberName.equals("jsyang"));
         }
+        rs.close();
+    }
+
+    public void testRepr() throws Exception {
+        ResultSet rs = st.executeQuery("MATCH path=(p1)-[m:manage]->(p2 {name: 'ktlee'}) RETURN path, p1, m");
+        rs.next();
+
+        Path path = (Path)rs.getObject("path");
+        assertEquals("[person[4.1]{\"name\": \"kskim\"},manage[6.1][4.1,4.2]{},person[4.2]{\"name\": \"ktlee\"}]",
+                path.getValue());
+
+        Vertex boss = (Vertex)rs.getObject("p1");
+        assertEquals("person[4.1]{\"name\":\"kskim\"}", boss.getValue());
+
+        Edge rel = (Edge)rs.getObject("m");
+        assertEquals("manage[6.1][4.1,4.2]{}", rel.getValue());
+
         rs.close();
     }
 }

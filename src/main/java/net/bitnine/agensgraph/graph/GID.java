@@ -37,7 +37,7 @@ public class GID {
     }
 
     public String toString() {
-        return "[" + oid + "." + id + "]";
+        return oid + "." + id;
     }
 
     public int getOid() {

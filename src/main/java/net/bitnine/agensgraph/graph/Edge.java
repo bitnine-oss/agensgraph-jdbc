@@ -68,9 +68,8 @@ public class Edge extends PGobject implements Serializable, Closeable {
     }
 
     public String getValue() {
-        return label + eid.toString()
-                + "[" + PGtokenizer.removeBox(startVid.toString()) + ","
-                + PGtokenizer.removeBox(endVid.toString()) + "]"
+        return label + "[" + eid.toString() + "]"
+                + "[" + startVid.toString() + "," + endVid.toString() + "]"
                 + ((props == null) ? "" : props.toString());
     }
 
