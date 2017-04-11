@@ -67,7 +67,7 @@ public class Vertex extends PGobject implements Serializable, Closeable {
     }
 
     public String getValue() {
-        return label + vid.toString() + ((props == null) ? "" : props.toString());
+        return label + "[" + vid.toString() + "]" + ((props == null) ? "" : props.toString());
     }
 
     @Override
