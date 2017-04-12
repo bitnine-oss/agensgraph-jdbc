@@ -6,7 +6,11 @@
 
 AgensGraph's JDBC driver is based on PostgreSQL JDBC Driver and offering Java Driver for Java application developer. Thus, When users develop some application, there is little difference between using the API of AgensGraph Java Driver and Postgres JDBC Driver. The only difference is that AgensGraph uses Cypher query language instead of SQL and utilizes Graph Data as data type like Vertex, Edge and Path.
 
-## Driver Download ##
+## Usage of Java Driver ##
+
+This section will handle how to use Java Driver through examples.
+
+### Get the Driver ###
 
 You can download the precompiled driver(jar) from [bitnine.net/downloads](http://bitnine.net/downloads) or use maven as follows
 ```xml
@@ -17,10 +21,6 @@ You can download the precompiled driver(jar) from [bitnine.net/downloads](http:/
 </dependency>
 ```
 You can search the latest version on [The Central Repository with GroupId and ArtifactId](http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22net.bitnine%22%20AND%20a%3A%22agensgraph-jdbc%22)
-
-## Usage of Java Driver ##
-
-This section will handle how to use Java Driver through examples.
 
 ### Connection ###
 
