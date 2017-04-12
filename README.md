@@ -8,18 +8,15 @@ AgensGraph's JDBC driver is based on PostgreSQL JDBC Driver and offering Java Dr
 
 ## Driver Download ##
 
-You can download from [bitnine.net/downloads](http://bitnine.net/downloads) or use maven as follows
+You can download the precompiled driver(jar) from [bitnine.net/downloads](http://bitnine.net/downloads) or use maven as follows
+```xml
+<dependency>
+  <groupId>net.bitnine</groupId>
+  <artifactId>agensgraph-jdbc</artifactId>
+  <version>1.2.0</version>
+</dependency>
 ```
-<dependencies>
-  ...
-  <dependency>
-    <groupId>net.bitnine</groupId>
-    <artifactId>agensgraph-jdbc</artifactId>
-    <version>1.1.0</version>
-  </dependency>
-  ...
-</dependencies>
-```
+You can search the latest version on [The Central Repository with GroupId and ArtifactId](http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22net.bitnine%22%20AND%20a%3A%22agensgraph-jdbc%22)
 
 ## Usage of Java Driver ##
 
