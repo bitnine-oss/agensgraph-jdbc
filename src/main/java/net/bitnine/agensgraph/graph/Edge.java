@@ -16,6 +16,8 @@
 
 package net.bitnine.agensgraph.graph;
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
+import net.bitnine.agensgraph.graph.property.JsonArray;
 import net.bitnine.agensgraph.graph.property.JsonObject;
 import org.postgresql.util.*;
 
@@ -101,5 +103,61 @@ public class Edge extends PGobject implements Serializable, Closeable {
 
     public GID getEndVertexid() {
         return endVid;
+    }
+
+    public Boolean getBoolean(String name) {
+        return props.getBoolean(name);
+    }
+
+    public Boolean getBoolean(String name, Boolean defaultValue) {
+        return props.getBoolean(name, defaultValue);
+    }
+
+    public Integer getInt(String name) {
+        return props.getInt(name);
+    }
+
+    public Integer getInt(String name, Integer defaultValue) {
+        return props.getInt(name, defaultValue);
+    }
+
+    public Long getLong(String name) {
+        return props.getLong(name);
+    }
+
+    public Long getLong(String name, Long defaultValue) {
+        return props.getLong(name, defaultValue);
+    }
+
+    public Double getDouble(String name) {
+        return props.getDouble(name);
+    }
+
+    public Double getDouble(String name, Double defaultValue) {
+        return props.getDouble(name, defaultValue);
+    }
+
+    public String getString(String name) {
+        return props.getString(name);
+    }
+
+    public String getString(String name, String defaultValue) {
+        return props.getString(name, defaultValue);
+    }
+
+    public JsonObject getObject(String name) {
+        return props.getObject(name);
+    }
+
+    public JsonObject getObject(String name, JsonObject defaultValue) {
+        return props.getObject(name, defaultValue);
+    }
+
+    public JsonArray getArray(String name) {
+        return props.getArray(name);
+    }
+
+    public JsonArray getArray(String name, JsonArray defaultValue) {
+        return props.getArray(name, defaultValue);
     }
 }

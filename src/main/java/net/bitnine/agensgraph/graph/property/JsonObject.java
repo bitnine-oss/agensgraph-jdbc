@@ -87,20 +87,12 @@ public class JsonObject extends Jsonb {
 
     public boolean isNull(String name) { return null == props.get(name); }
 
-    public JsonObject getObject(String name) {
-        return new JsonObject((JSONObject)get(name));
-    }
-
-    public JsonArray getArray(String name) {
-        return new JsonArray((JSONArray)get(name));
-    }
-
-    public String getString(String name) {
-        return (String)get(name);
-    }
-
     public Boolean getBoolean(String name) {
         return (Boolean)get(name);
+    }
+
+    public Boolean getBoolean(String name, Boolean defaultValue) {
+        return isNull(name) ? defaultValue : getBoolean(name);
     }
 
     public Integer getInt(String name) {
@@ -108,12 +100,48 @@ public class JsonObject extends Jsonb {
         return (value == null) ? null : value.intValue();
     }
 
+    public Integer getInt(String name, Integer defaultValue) {
+        return isNull(name) ? defaultValue : getInt(name);
+    }
+
     public Long getLong(String name) {
         return (Long)get(name);
     }
 
+    public Long getLong(String name, Long defaultValue) {
+        return isNull(name) ? defaultValue : getLong(name);
+    }
+
     public Double getDouble(String name) {
         return (Double)get(name);
+    }
+
+    public Double getDouble(String name, Double defaultValue) {
+        return isNull(name) ? defaultValue : getDouble(name);
+    }
+
+    public String getString(String name) {
+        return (String)get(name);
+    }
+
+    public String getString(String name, String defaultValue) {
+        return isNull(name) ? defaultValue : getString(name);
+    }
+
+    public JsonObject getObject(String name) {
+        return new JsonObject((JSONObject)get(name));
+    }
+
+    public JsonObject getObject(String name, JsonObject defaultValue) {
+        return isNull(name) ? defaultValue : getObject(name);
+    }
+
+    public JsonArray getArray(String name) {
+        return new JsonArray((JSONArray)get(name));
+    }
+
+    public JsonArray getArray(String name, JsonArray defaultValue) {
+        return isNull(name) ? defaultValue : getArray(name);
     }
 
     public Set<String> getNames() {

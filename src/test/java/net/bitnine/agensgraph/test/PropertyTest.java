@@ -75,17 +75,17 @@ public class PropertyTest extends TestCase {
     public void testProperty() throws Exception {
         ResultSet rs = st.executeQuery("MATCH (n)-[:employee '{\"no\":1}']->(m) RETURN n, m");
         while (rs.next()) {
-            Vertex n = (Vertex)rs.getObject("m");
-            assertEquals(20, (int)n.getProperty().getInt("age"));
-            assertEquals(178.5, n.getProperty().getDouble("height"));
-            assertFalse(n.getProperty().getBoolean("married"));
+            Vertex n = (Vertex) rs.getObject("m");
+            assertEquals(20, (int)n.getInt("age"));
+            assertEquals(178.5, n.getDouble("height"));
+            assertFalse(n.getBoolean("married"));
         }
         rs = st.executeQuery("MATCH (n)-['{\"no\":2}']->(m) RETURN n, m");
         while (rs.next()) {
-            Vertex n = (Vertex)rs.getObject("m");
-            JsonArray array = n.getProperty().getArray("hobbies");
+            Vertex n = (Vertex) rs.getObject("m");
+            JsonArray array = n.getArray("hobbies");
             assertEquals("climbing", array.getString(1));
-            Long age = n.getProperty().getLong("age");
+            Long age = n.getLong("age");
             assertEquals(null, age);
         }
         rs = st.executeQuery("MATCH (n)-['{\"no\":2}']->(m) RETURN m.hobbies::jsonb as hobbies");
@@ -130,5 +130,21 @@ public class PropertyTest extends TestCase {
         assertEquals("{\"submap\":{\"a\":\"a\",\"b\":[true,false,true],\"c\":[{\"x\":10,\"y\":20},{\"x\":30,\"y\":40}]}," +
                         "\"array\":[1,2,3],\"name\":\"ktlee\",\"id\":1,\"list\":[\"first\",\"second\"]}",
                 jobj.toString());
+    }
+
+    public void testDefaultValue() throws Exception {
+        ResultSet rs = st.executeQuery("MATCH (n)-['{\"no\":2}']->(m) RETURN n, m");
+        while (rs.next()) {
+            Vertex n = (Vertex) rs.getObject("m");
+            assertEquals(true, (boolean) n.getBoolean("invalid key", true));
+            assertEquals(10L, (long) n.getLong("invalid key", 10L));
+            assertEquals(10.4D, n.getDouble("invalid key", 10.4D));
+            assertEquals("empty", n.getString("invalid key", "empty"));
+            JsonArray array = n.getArray("hobbies");
+            assertEquals(false, (boolean) array.getBoolean(30, false));
+            assertEquals(10L, (long) array.getLong(30, 10L));
+            assertEquals(10.4D, array.getDouble(30, 10.4D));
+            assertEquals("woodwork", array.getString(30, "woodwork"));
+        }
     }
 }

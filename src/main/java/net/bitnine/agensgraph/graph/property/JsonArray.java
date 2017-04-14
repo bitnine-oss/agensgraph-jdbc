@@ -120,20 +120,14 @@ public class JsonArray extends Jsonb {
 
     public boolean isNull(int index) { return null == get(index); }
 
-    public JsonObject getObject(int index) {
-        return new JsonObject((JSONObject) get(index));
-    }
-
-    public JsonArray getArray(int index) {
-        return new JsonArray((JSONArray) get(index));
-    }
-
-    public String getString(int index) {
-        return (String) get(index);
-    }
+    public boolean isOutOfBounds(int index) { return index < 0 || index >= array.size(); }
 
     public Boolean getBoolean(int index) {
         return (Boolean) get(index);
+    }
+
+    public Boolean getBoolean(int index, Boolean defaultValue) {
+        return isOutOfBounds(index) || isNull(index) ? defaultValue : getBoolean(index);
     }
 
     public Integer getInt(int index) {
@@ -141,12 +135,48 @@ public class JsonArray extends Jsonb {
         return (value == null) ? null : value.intValue();
     }
 
+    public Integer getInt(int index, Integer defaultValue) {
+        return isOutOfBounds(index) || isNull(index) ? defaultValue : getInt(index);
+    }
+
     public Long getLong(int index) {
         return (Long) get(index);
     }
 
+    public Long getLong(int index, Long defaultValue) {
+        return isOutOfBounds(index) || isNull(index) ? defaultValue : getLong(index);
+    }
+
     public Double getDouble(int index) {
         return (Double) get(index);
+    }
+
+    public Double getDouble(int index, Double defaultValue) {
+        return isOutOfBounds(index) || isNull(index) ? defaultValue : getDouble(index);
+    }
+
+    public String getString(int index) {
+        return (String) get(index);
+    }
+
+    public String getString(int index, String defaultValue) {
+        return isOutOfBounds(index) || isNull(index) ? defaultValue : getString(index);
+    }
+
+    public JsonObject getObject(int index) {
+        return new JsonObject((JSONObject) get(index));
+    }
+
+    public JsonObject getObject(int index, JsonObject defaultValue) {
+        return isOutOfBounds(index) || isNull(index) ? defaultValue : getObject(index);
+    }
+
+    public JsonArray getArray(int index) {
+        return new JsonArray((JSONArray) get(index));
+    }
+
+    public JsonArray getArray(int index, JsonArray defaultValue) {
+        return isOutOfBounds(index) || isNull(index) ? defaultValue : getArray(index);
     }
 
     public Iterator<Object> iterator() {
