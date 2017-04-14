@@ -17,6 +17,7 @@
 package net.bitnine.agensgraph.test;
 
 import junit.framework.TestCase;
+import net.bitnine.agensgraph.graph.property.JsonObject;
 import net.bitnine.agensgraph.graph.property.JsonType;
 import net.bitnine.agensgraph.graph.property.Jsonb;
 import net.bitnine.agensgraph.graph.Vertex;
@@ -25,6 +26,10 @@ import net.bitnine.agensgraph.graph.property.JsonArray;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class PropertyTest extends TestCase {
 
@@ -97,9 +102,33 @@ public class PropertyTest extends TestCase {
         assertEquals(JsonType.STRING, jval.getJsonType());
         String name = jval.getString();
         assertEquals("Emil", name);;
-        String qname = (String)rs.getString(2);
+        String qname = rs.getString(2);
         assertEquals("Emil", qname);
         assertFalse(rs.next());
         rs.close();
+    }
+
+    public void testMapListArray() throws Exception {
+        Map<String, Object> map = new HashMap<>();
+        map.put("id", 1);
+        map.put("name", "ktlee");
+        List<String> list = new ArrayList<>();
+        list.add("first");
+        list.add("second");
+        map.put("list", list);
+        map.put("array", new int[]{1, 2, 3});
+        Map<String, Object> submap = new HashMap<>();
+        submap.put("a", "a");
+        submap.put("b", JsonArray.create(true, false, true));
+        List<JsonObject> list2 = new ArrayList<>();
+        list2.add(JsonObject.create("{\"x\": 10, \"y\": 20}"));
+        list2.add(JsonObject.create("{\"x\": 30, \"y\": 40}"));
+        submap.put("c", list2);
+        map.put("submap", submap);
+
+        JsonObject jobj = JsonObject.create(map);
+        assertEquals("{\"submap\":{\"a\":\"a\",\"b\":[true,false,true],\"c\":[{\"x\":10,\"y\":20},{\"x\":30,\"y\":40}]}," +
+                        "\"array\":[1,2,3],\"name\":\"ktlee\",\"id\":1,\"list\":[\"first\",\"second\"]}",
+                jobj.toString());
     }
 }

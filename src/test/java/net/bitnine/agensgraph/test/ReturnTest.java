@@ -58,31 +58,31 @@ public class ReturnTest extends TestCase {
     public void testSimpleBind() throws Exception {
         ResultSet rs;
         PreparedStatement pstmt = con.prepareStatement("RETURN ?");
+        JsonObject jo;
 
         Jsonb data = new Jsonb();
         data.setJsonValue(JsonObject.create("{\"name\":\"ktlee\"}"));
         pstmt.setObject(1, data);
         rs = pstmt.executeQuery();
         while (rs.next()) {
-            JsonObject jo = ((Jsonb)rs.getObject(1)).getJsonObject();
+            jo = ((Jsonb)rs.getObject(1)).getJsonObject();
             assertEquals("ktlee", jo.getString("name"));
         }
         rs.close();
 
-        Map<String, Object> jobj = new HashMap<>();
-        jobj.put("name", "ktlee");
-        jobj.put("age", 41);
-        pstmt.setObject(1, JsonObject.create(jobj));
+        Map<String, Object> map = new HashMap<>();
+        map.put("name", "ktlee");
+        map.put("age", 41);
+        pstmt.setObject(1, JsonObject.create(map));
         rs = pstmt.executeQuery();
         while (rs.next()) {
-            JsonObject jo = ((Jsonb)rs.getObject(1)).getJsonObject();
+            jo = ((Jsonb)rs.getObject(1)).getJsonObject();
             assertEquals(41, jo.getInt("age").intValue());
         }
         rs.close();
 
-        JsonObject jo = JsonObject.create(jobj);
-        jo.put("id", JsonArray.create(1, 2, 3));
-        pstmt.setObject(1, jo);
+        map.put("id", JsonArray.create(1, 2, 3));
+        pstmt.setObject(1, JsonObject.create(map));
         rs = pstmt.executeQuery();
         while (rs.next()) {
             jo = ((Jsonb)rs.getObject(1)).getJsonObject();
@@ -90,11 +90,11 @@ public class ReturnTest extends TestCase {
         }
         rs.close();
 
-        List<String> hobbies = new LinkedList<String>();
+        List<String> hobbies = new LinkedList<>();
         hobbies.add("climbing");
         hobbies.add("woodwork");
-        jobj.put("hobbies", hobbies);
-        pstmt.setObject(1, JsonObject.create(jobj));
+        map.put("hobbies", hobbies);
+        pstmt.setObject(1, JsonObject.create(map));
         rs = pstmt.executeQuery();
         while (rs.next()) {
             jo = ((Jsonb)rs.getObject(1)).getJsonObject();
@@ -105,8 +105,8 @@ public class ReturnTest extends TestCase {
         Map<String, Object> physique = new HashMap<>();
         physique.put("height", 172);
         physique.put("weight", 74);
-        jobj.put("physique", physique);
-        pstmt.setObject(1, JsonObject.create(jobj));
+        map.put("physique", physique);
+        pstmt.setObject(1, JsonObject.create(map));
         rs = pstmt.executeQuery();
         while (rs.next()) {
             jo = ((Jsonb)rs.getObject(1)).getJsonObject();

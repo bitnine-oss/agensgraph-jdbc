@@ -20,10 +20,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class JsonArray extends Jsonb {
     private JSONArray array;
@@ -53,35 +50,59 @@ public class JsonArray extends Jsonb {
         return new JsonArray(s);
     }
 
-    public static JsonArray create(Object... values) {
+    static JsonArray createArray(boolean... values) {
         JsonArray array = new JsonArray();
-        for (Object value : values) {
-            if (Jsonb.isJsonValue(value))
-                array.add(value);
-            else if (value instanceof Map)
-                array.add(JsonObject.create((Map<?, ?>) value));
-            else if (value instanceof List)
-                array.add(JsonArray.create((List<?>) value));
-            else
-                throw new IllegalArgumentException("invalid json value type: " + value.getClass());
+        for (boolean value : values) {
+            array.add(value);
         }
         return array;
     }
 
+    static JsonArray createArray(int... values) {
+        JsonArray array = new JsonArray();
+        for (int value : values) {
+            array.add(value);
+        }
+        return array;
+    }
+
+    static JsonArray createArray(long... values) {
+        JsonArray array = new JsonArray();
+        for (long value : values) {
+            array.add(value);
+        }
+        return array;
+    }
+
+    static JsonArray createArray(double... values) {
+        JsonArray array = new JsonArray();
+        for (double value : values) {
+            array.add(value);
+        }
+        return array;
+    }
+
+    static JsonArray createArray(String... values) {
+        JsonArray array = new JsonArray();
+        for (String value : values) {
+            array.add(value);
+        }
+        return array;
+    }
+
+    public static JsonArray create(Object... values) {
+        JsonArray array = new JsonArray();
+        for (Object value : values)
+            array.add(value);
+        return array;
+    }
+
     public static JsonArray create(List<?> list) {
-        JsonArray array = JsonArray.create();
+        JsonArray array = new JsonArray();
         if (list == null || list.isEmpty())
             return array;
-        for (Object value : list) {
-            if (isJsonValue(value))
-                array.add(value);
-            else if (value instanceof Map)
-                array.add(JsonObject.create((Map<?, ?>) value));
-            else if (value instanceof List)
-                array.add(JsonArray.create((List<?>) value));
-            else
-                throw new IllegalArgumentException("invalid json value type: " + value.getClass());
-        }
+        for (Object value : list)
+            array.add(value);
         return array;
     }
 
@@ -193,8 +214,24 @@ public class JsonArray extends Jsonb {
     public JsonArray add(Object value) {
         if (isJsonValue(value))
             array.add(value);
+        else if (value instanceof Map)
+            array.add(JsonObject.create((Map<String, ?>) value));
+        else if (value instanceof List)
+            array.add(JsonArray.create((List<?>) value));
+        else if (value instanceof boolean[])
+            array.add(JsonArray.createArray((boolean[]) value));
+        else if (value instanceof int[])
+            array.add(JsonArray.createArray((int[]) value));
+        else if (value instanceof long[])
+            array.add(JsonArray.createArray((long[]) value));
+        else if (value instanceof double[])
+            array.add(JsonArray.createArray((double[]) value));
+        else if (value instanceof String[])
+            array.add(JsonArray.createArray((String[]) value));
+        else if (value instanceof Object[])
+            array.add(JsonArray.create((Object[]) value));
         else
-            throw new IllegalArgumentException("invalid json value type");
+            throw new IllegalArgumentException("invalid json value type: " + value.getClass());
         return this;
     }
 }
