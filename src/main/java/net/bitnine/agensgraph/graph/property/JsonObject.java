@@ -20,10 +20,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class JsonObject extends Jsonb {
     JSONObject props;
@@ -53,24 +50,16 @@ public class JsonObject extends Jsonb {
         return new JsonObject(s);
     }
 
-    public static JsonObject create(Map<?, ?> map) {
+    public static JsonObject create(Map<String, ?> map) {
         if (map == null || map.isEmpty())
             return new JsonObject();
 
         JsonObject jobj = new JsonObject();
-        for (Map.Entry<?, ?> entry : map.entrySet()) {
-            String key = entry.getKey().toString();
+        for (Map.Entry<String, ?> entry : map.entrySet()) {
+            String key = entry.getKey();
             if (key == null)
                 throw new IllegalArgumentException("'null' key is not allowed in JsonObject");
-            Object value = entry.getValue();
-            if (isJsonValue(value))
-                jobj.put(key, value);
-            else if (value instanceof Map)
-                jobj.put(key, JsonObject.create((Map<?, ?>) value));
-            else if (value instanceof List)
-                jobj.put(key, JsonArray.create((List<?>) value));
-            else
-                throw new IllegalArgumentException("invalid json value type");
+            jobj.put(key, entry.getValue());
         }
 
         return jobj;
@@ -196,11 +185,27 @@ public class JsonObject extends Jsonb {
         return this;
     }
 
-    public JsonObject put(String name, Object value) {
+    public JsonObject put(String key, Object value) {
         if (isJsonValue(value))
-            props.put(name, value);
+            props.put(key, value);
+        else if (value instanceof Map)
+            props.put(key, JsonObject.create((Map<String, ?>) value));
+        else if (value instanceof List)
+            props.put(key, JsonArray.create((List<?>) value));
+        else if (value instanceof boolean[])
+            props.put(key, JsonArray.createArray((boolean[]) value));
+        else if (value instanceof int[])
+            props.put(key, JsonArray.createArray((int[]) value));
+        else if (value instanceof long[])
+            props.put(key, JsonArray.createArray((long[]) value));
+        else if (value instanceof double[])
+            props.put(key, JsonArray.createArray((double[]) value));
+        else if (value instanceof String[])
+            props.put(key, JsonArray.createArray((String[]) value));
+        else if (value instanceof Object[])
+            props.put(key, JsonArray.create((Object[]) value));
         else
-            throw new IllegalArgumentException("invalid json value type");
+            throw new IllegalArgumentException("invalid json value type: " + value.getClass());
         return this;
     }
 }
