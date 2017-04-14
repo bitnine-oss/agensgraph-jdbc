@@ -79,9 +79,9 @@ public class MatchTest extends TestCase {
         while (rs.next()) {
             Vertex boss = (Vertex)rs.getObject("p1");
             assertEquals("person", boss.getLabel());
-            assertEquals("kskim", boss.getProperty().getString("name"));
+            assertEquals("kskim", boss.getString("name"));
             Vertex member = (Vertex)rs.getObject("p2");
-            String memberName = member.getProperty().getString("name");
+            String memberName = member.getString("name");
             //FIXME use ORDER By clause
             assertTrue(memberName.equals("ktlee") || memberName.equals("jsyang"));
         }

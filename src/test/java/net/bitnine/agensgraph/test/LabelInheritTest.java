@@ -68,7 +68,7 @@ public class LabelInheritTest extends TestCase {
         i = 0;
         while (rs.next()) {
             Vertex v = (Vertex)rs.getObject("x");
-            assertEquals("son", v.getProperty().getString("name"));
+            assertEquals("son", v.getString("name"));
             ++i;
         }
         assertEquals(1, i);

@@ -63,12 +63,12 @@ public class WhereTest extends TestCase {
         ResultSet rs = st.executeQuery("MATCH (ee:person) WHERE ee.name = 'Emil' return ee");
         while (rs.next()) {
             Vertex n = (Vertex) rs.getObject("ee");
-            assertEquals(99, (int) n.getProperty().getInt("klout"));
+            assertEquals(99, (int) n.getInt("klout"));
         }
         rs = st.executeQuery("MATCH (ee:person) WHERE ee.klout::int = 99 return ee");
         while (rs.next()) {
             Vertex n = (Vertex) rs.getObject("ee");
-            assertEquals(99, (int) n.getProperty().getInt("klout"));
+            assertEquals(99, (int) n.getInt("klout"));
         }
         rs = st.executeQuery("MATCH (ee:person) WHERE ee.from = 'Korea' return ee");
         assertFalse(rs.next());
@@ -81,7 +81,7 @@ public class WhereTest extends TestCase {
         ResultSet rs = pstmt.executeQuery();
         assertTrue(rs.next());
         Vertex n = (Vertex) rs.getObject("ee");
-        assertEquals(99, (int) n.getProperty().getInt("klout"));
+        assertEquals(99, (int) n.getInt("klout"));
         assertFalse(rs.next());
         rs.close();
 
@@ -90,7 +90,7 @@ public class WhereTest extends TestCase {
         rs = pstmt.executeQuery();
         assertTrue(rs.next());
         n = (Vertex) rs.getObject("ee");
-        assertEquals(99, (int) n.getProperty().getInt("klout"));
+        assertEquals(99, (int) n.getInt("klout"));
         assertFalse(rs.next());
         rs.close();
         pstmt.close();
@@ -102,7 +102,7 @@ public class WhereTest extends TestCase {
         ResultSet rs = pstmt.executeQuery();
         assertTrue(rs.next());
         Vertex n = (Vertex)rs.getObject("ee");
-        assertEquals(99, (int)n.getProperty().getInt("klout"));
+        assertEquals(99, (int)n.getInt("klout"));
         assertFalse(rs.next());
         rs.close();
         pstmt.close();
@@ -114,7 +114,7 @@ public class WhereTest extends TestCase {
         ResultSet rs = pstmt.executeQuery();
         while (rs.next()) {
             Vertex n = (Vertex)rs.getObject("ee");
-            assertEquals(99, (int)n.getProperty().getInt("klout"));
+            assertEquals(99, (int)n.getInt("klout"));
         }
         assertFalse(rs.next());
         rs.close();

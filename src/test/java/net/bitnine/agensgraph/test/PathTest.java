@@ -83,7 +83,7 @@ public class PathTest extends TestCase {
             Path p = (Path)rs.getObject("p");
             int i = 0;
             for (Vertex v : p.vertexs()) {
-                assertEquals(vnames[i++], v.getProperty().getString("name"));
+                assertEquals(vnames[i++], v.getString("name"));
             }
             i = 0;
             for (Edge e : p.edges()) {
