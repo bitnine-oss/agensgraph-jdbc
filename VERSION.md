@@ -1,3 +1,7 @@
+1.3.0 / 2017-05-15
+------------------
+* Change PG-JDBC 94.1208.jre7 to 42.1.1.jre7
+
 1.2.1 / 2017-05-08
 ------------------
 * Support for conversion from primitive array to JsonArray

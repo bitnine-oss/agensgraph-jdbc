@@ -14,11 +14,21 @@ import org.postgresql.core.ServerVersion;
 import org.postgresql.core.Version;
 import org.postgresql.jdbc.PgConnection;
 
+import org.junit.Assert;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Utility class for JDBC tests
@@ -32,6 +42,16 @@ public class TestUtil {
   }
 
   public static String getURL(String server, int port) {
+    String logLevel = "";
+    if (getLogLevel() != null && !getLogLevel().equals("")) {
+      logLevel = "&loggerLevel=" + getLogLevel();
+    }
+
+    String logFile = "";
+    if (getLogFile() != null && !getLogFile().equals("")) {
+      logFile = "&loggerFile=" + getLogFile();
+    }
+
     String protocolVersion = "";
     if (getProtocolVersion() != 0) {
       protocolVersion = "&protocolVersion=" + getProtocolVersion();
@@ -61,7 +81,8 @@ public class TestUtil {
         + server + ":"
         + port + "/"
         + getDatabase()
-        + "?loglevel=" + getLogLevel()
+        + logLevel
+        + logFile
         + protocolVersion
         + binaryTransfer
         + receiveBufferSize
@@ -136,8 +157,15 @@ public class TestUtil {
   /*
    * Returns the log level to use
    */
-  public static int getLogLevel() {
-    return Integer.parseInt(System.getProperty("loglevel", "0"));
+  public static String getLogLevel() {
+    return System.getProperty("loggerLevel");
+  }
+
+  /*
+   * Returns the log file to use
+   */
+  public static String getLogFile() {
+    return System.getProperty("loggerFile");
   }
 
   /*
@@ -205,14 +233,6 @@ public class TestUtil {
       p.putAll(System.getProperties());
       System.getProperties().putAll(p);
 
-      if (getLogLevel() > 0) {
-        // Ant's junit task likes to buffer stdout/stderr and tends to run out of memory.
-        // So we put debugging output to a file instead.
-        java.io.Writer output = new java.io.FileWriter("postgresql-jdbc-tests.debug.txt", true);
-        DriverManager.setLogWriter(new java.io.PrintWriter(output, true));
-      }
-
-      net.bitnine.agensgraph.Driver.setLogLevel(getLogLevel()); // Also loads and registers driver.
       initialized = true;
     }
   }
@@ -242,7 +262,7 @@ public class TestUtil {
    * @return connection using a priviliged user mostly for tests that the ability to load C
    *         functions now as of 4/14
    */
-  public static Connection openPrivilegedDB() throws Exception {
+  public static java.sql.Connection openPrivilegedDB() throws Exception {
 
     initDriver();
     Properties properties = new Properties();
@@ -257,7 +277,7 @@ public class TestUtil {
    *
    * @return connection
    */
-  public static Connection openDB() throws Exception {
+  public static java.sql.Connection openDB() throws Exception {
     return openDB(new Properties());
   }
 
@@ -265,7 +285,7 @@ public class TestUtil {
    * Helper - opens a connection with the allowance for passing additional parameters, like
    * "compatible".
    */
-  public static Connection openDB(Properties props) throws Exception {
+  public static java.sql.Connection openDB(Properties props) throws Exception {
     initDriver();
 
     // Allow properties to override the user name.
@@ -285,6 +305,12 @@ public class TestUtil {
     props.setProperty("password", password);
     if (!props.containsKey(PGProperty.PREPARE_THRESHOLD.getName())) {
       PGProperty.PREPARE_THRESHOLD.set(props, getPrepareThreshold());
+    }
+    if (!props.containsKey(PGProperty.PREFER_QUERY_MODE.getName())) {
+      String value = System.getProperty(PGProperty.PREFER_QUERY_MODE.getName());
+      if (value != null) {
+        props.put(PGProperty.PREFER_QUERY_MODE.getName(), value);
+      }
     }
 
     return DriverManager.getConnection(getURL(), props);
@@ -313,7 +339,7 @@ public class TestUtil {
 
       st.executeUpdate(sql);
     } finally {
-      st.close();
+      closeQuietly(st);
     }
   }
 
@@ -323,10 +349,8 @@ public class TestUtil {
   public static void dropSchema(Connection con, String schema) throws SQLException {
     Statement stmt = con.createStatement();
     try {
-      String sql = "DROP SCHEMA " + schema;
-      if (haveMinimumServerVersion(con, ServerVersion.v7_3)) {
-        sql += " CASCADE ";
-      }
+      String sql = "DROP SCHEMA " + schema + " CASCADE ";
+
       stmt.executeUpdate(sql);
     } catch (SQLException ex) {
       // Since every create schema issues a drop schema
@@ -358,16 +382,15 @@ public class TestUtil {
       dropTable(con, table);
 
       // Now create the table
-      String sql = "CREATE TABLE " + table + " (" + columns + ") ";
+      String sql = "CREATE TABLE " + table + " (" + columns + ")";
 
-      // Starting with 8.0 oids may be turned off by default.
-      // Some tests need them, so they flag that here.
-      if (withOids && haveMinimumServerVersion(con, ServerVersion.v8_0)) {
+      if (withOids) {
         sql += " WITH OIDS";
       }
+
       st.executeUpdate(sql);
     } finally {
-      st.close();
+      closeQuietly(st);
     }
   }
 
@@ -389,7 +412,7 @@ public class TestUtil {
       // Now create the table
       st.executeUpdate("create temp table " + table + " (" + columns + ")");
     } finally {
-      st.close();
+      closeQuietly(st);
     }
   }
 
@@ -411,7 +434,7 @@ public class TestUtil {
       // Now create the table
       st.executeUpdate("create type " + name + " as enum (" + values + ")");
     } finally {
-      st.close();
+      closeQuietly(st);
     }
   }
 
@@ -433,7 +456,46 @@ public class TestUtil {
       // Now create the table
       st.executeUpdate("create type " + name + " as (" + values + ")");
     } finally {
-      st.close();
+      closeQuietly(st);
+    }
+  }
+
+  /**
+   * Drops a domain
+   *
+   * @param con Connection
+   * @param name String
+   */
+  public static void dropDomain(Connection con, String name)
+      throws SQLException {
+    Statement st = con.createStatement();
+    try {
+      st.executeUpdate("drop domain " + name + " cascade");
+    } catch (SQLException ex) {
+      if (!con.getAutoCommit()) {
+        throw ex;
+      }
+    } finally {
+      closeQuietly(st);
+    }
+  }
+
+  /**
+   * Helper creates a domain
+   *
+   * @param con Connection
+   * @param name String
+   * @param values String
+   */
+  public static void createDomain(Connection con, String name, String values)
+      throws SQLException {
+    Statement st = con.createStatement();
+    try {
+      dropDomain(con, name);
+      // Now create the table
+      st.executeUpdate("create domain " + name + " as " + values);
+    } finally {
+      closeQuietly(st);
     }
   }
 
@@ -458,10 +520,7 @@ public class TestUtil {
   public static void dropTable(Connection con, String table) throws SQLException {
     Statement stmt = con.createStatement();
     try {
-      String sql = "DROP TABLE " + table;
-      if (haveMinimumServerVersion(con, ServerVersion.v7_3)) {
-        sql += " CASCADE ";
-      }
+      String sql = "DROP TABLE " + table + " CASCADE ";
       stmt.executeUpdate(sql);
     } catch (SQLException ex) {
       // Since every create table issues a drop table
@@ -480,12 +539,27 @@ public class TestUtil {
   public static void dropType(Connection con, String type) throws SQLException {
     Statement stmt = con.createStatement();
     try {
-      String sql = "DROP TYPE " + type;
+      String sql = "DROP TYPE " + type + " CASCADE";
       stmt.executeUpdate(sql);
     } catch (SQLException ex) {
       if (!con.getAutoCommit()) {
         throw ex;
       }
+    }
+  }
+
+  public static void assertNumberOfRows(Connection con, String tableName, int expectedRows, String message)
+      throws SQLException {
+    PreparedStatement ps = null;
+    ResultSet rs = null;
+    try {
+      ps = con.prepareStatement("select count(*) from " + tableName + " as t");
+      rs = ps.executeQuery();
+      rs.next();
+      Assert.assertEquals(message, expectedRows, rs.getInt(1));
+    } finally {
+      closeQuietly(rs);
+      closeQuietly(ps);
     }
   }
 
@@ -561,14 +635,6 @@ public class TestUtil {
    * version. This is convenient because we are working with a java.sql.Connection, not an Postgres
    * connection.
    */
-  public static boolean haveMinimumServerVersion(Connection con, String version)
-      throws SQLException {
-    if (con instanceof PgConnection) {
-      return ((PgConnection) con).haveMinimumServerVersion(version);
-    }
-    return false;
-  }
-
   public static boolean haveMinimumServerVersion(Connection con, int version) throws SQLException {
     if (con instanceof PgConnection) {
       return ((PgConnection) con).haveMinimumServerVersion(version);
@@ -585,7 +651,7 @@ public class TestUtil {
   }
 
   public static boolean haveMinimumJVMVersion(String version) {
-    String jvm = System.getProperty("java.version");
+    String jvm = java.lang.System.getProperty("java.version");
     return (jvm.compareTo(version) >= 0);
   }
 
@@ -671,6 +737,102 @@ public class TestUtil {
         rs.close();
       } catch (SQLException ignore) {
       }
+    }
+  }
+
+  public static void recreateLogicalReplicationSlot(Connection connection, String slotName, String outputPlugin)
+      throws SQLException, InterruptedException, TimeoutException {
+    //drop previos slot
+    dropReplicationSlot(connection, slotName);
+
+    PreparedStatement stm = null;
+    try {
+      stm = connection.prepareStatement("SELECT * FROM pg_create_logical_replication_slot(?, ?)");
+      stm.setString(1, slotName);
+      stm.setString(2, outputPlugin);
+      stm.execute();
+    } finally {
+      closeQuietly(stm);
+    }
+  }
+
+  public static void recreatePhysicalReplicationSlot(Connection connection, String slotName)
+      throws SQLException, InterruptedException, TimeoutException {
+    //drop previos slot
+    dropReplicationSlot(connection, slotName);
+
+    PreparedStatement stm = null;
+    try {
+      stm = connection.prepareStatement("SELECT * FROM pg_create_physical_replication_slot(?)");
+      stm.setString(1, slotName);
+      stm.execute();
+    } finally {
+      closeQuietly(stm);
+    }
+  }
+
+  public static void dropReplicationSlot(Connection connection, String slotName)
+      throws SQLException, InterruptedException, TimeoutException {
+    if (haveMinimumServerVersion(connection, ServerVersion.v9_5)) {
+      PreparedStatement stm = null;
+      try {
+        stm = connection.prepareStatement(
+            "select pg_terminate_backend(active_pid) from pg_replication_slots "
+                + "where active = true and slot_name = ?");
+        stm.setString(1, slotName);
+        stm.execute();
+      } finally {
+        closeQuietly(stm);
+      }
+    }
+
+    waitStopReplicationSlot(connection, slotName);
+
+    PreparedStatement stm = null;
+    try {
+      stm = connection.prepareStatement(
+          "select pg_drop_replication_slot(slot_name) "
+              + "from pg_replication_slots where slot_name = ?");
+      stm.setString(1, slotName);
+      stm.execute();
+    } finally {
+      closeQuietly(stm);
+    }
+  }
+
+  public static boolean isReplicationSlotActive(Connection connection, String slotName)
+      throws SQLException {
+    PreparedStatement stm = null;
+    ResultSet rs = null;
+
+    try {
+      stm =
+          connection.prepareStatement("select active from pg_replication_slots where slot_name = ?");
+      stm.setString(1, slotName);
+      rs = stm.executeQuery();
+      return rs.next() && rs.getBoolean(1);
+    } finally {
+      closeQuietly(rs);
+      closeQuietly(stm);
+    }
+  }
+
+  private static void waitStopReplicationSlot(Connection connection, String slotName)
+      throws InterruptedException, TimeoutException, SQLException {
+    long startWaitTime = System.currentTimeMillis();
+    boolean stillActive;
+    long timeInWait = 0;
+
+    do {
+      stillActive = isReplicationSlotActive(connection, slotName);
+      if (stillActive) {
+        TimeUnit.MILLISECONDS.sleep(100L);
+        timeInWait = System.currentTimeMillis() - startWaitTime;
+      }
+    } while (stillActive && timeInWait <= 30000);
+
+    if (stillActive) {
+      throw new TimeoutException("Wait stop replication slot " + timeInWait + " timeout occurs");
     }
   }
 }
