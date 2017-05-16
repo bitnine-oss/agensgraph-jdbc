@@ -16,7 +16,6 @@
 
 package net.bitnine.agensgraph.graph;
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import net.bitnine.agensgraph.graph.property.JsonArray;
 import net.bitnine.agensgraph.graph.property.JsonObject;
 import org.postgresql.util.*;

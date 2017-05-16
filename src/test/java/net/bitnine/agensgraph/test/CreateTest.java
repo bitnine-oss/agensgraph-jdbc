@@ -81,4 +81,16 @@ public class CreateTest extends TestCase {
             assertEquals("ERROR: jsonb object is expected for property map", e.getMessage());
         }
     }
+
+    public void testCreate_EscapeSyntax() throws Exception {
+        PreparedStatement pstmt = con.prepareStatement("CREATE ( :person {txid: ?} )");
+        pstmt.setObject(1, new Jsonb(10));
+        try {
+            pstmt.execute();
+            assertTrue(true);
+        }
+        catch (Exception e) {
+            assertTrue(false);
+        }
+    }
 }
