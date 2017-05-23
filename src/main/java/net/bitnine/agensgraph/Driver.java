@@ -245,6 +245,7 @@ public class Driver implements java.sql.Driver {
     props.setProperty("datatype.edge", "net.bitnine.agensgraph.graph.Edge");
     props.setProperty("datatype.graphpath", "net.bitnine.agensgraph.graph.Path");
     props.setProperty("datatype.jsonb", "net.bitnine.agensgraph.graph.property.Jsonb");
+    props.setProperty("datatype.graphid", "net.bitnine.agensgraph.graph.GID");
 
     try {
       // Setup java.util.logging.Logger using connection properties.
