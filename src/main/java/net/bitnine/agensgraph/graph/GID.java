@@ -16,7 +16,17 @@
 
 package net.bitnine.agensgraph.graph;
 
-public class GID {
+import org.postgresql.util.GT;
+import org.postgresql.util.PGobject;
+import org.postgresql.util.PSQLException;
+import org.postgresql.util.PSQLState;
+
+import java.io.Closeable;
+import java.io.IOException;
+import java.io.Serializable;
+import java.sql.SQLException;
+
+public class GID extends PGobject implements Serializable, Closeable {
     /**
      * ID of base object
      */
@@ -27,12 +37,22 @@ public class GID {
      */
     private int id;
 
-    GID(int oid, int id) {
-        this.oid = oid;
-        this.id = id;
+    public GID() {
+        setType("graphid");
     }
 
-    GID(String oid, String id) {
+    public GID(int oid, int id) {
+        setType("graphid");
+        setOid(oid);
+        setId(id);
+    }
+
+    public GID(String s) throws SQLException {
+        setType("graphid");
+        setValue(s);
+    }
+
+    GID(String oid, String id) throws SQLException {
         this(Integer.parseInt(oid), Integer.parseInt(id));
     }
 
@@ -44,7 +64,44 @@ public class GID {
         return oid;
     }
 
+    public void setOid(int oid) { this.oid = oid; }
+
     public int getId() {
         return id;
+    }
+
+    public void setId(int id) { this.id = id; }
+
+    public void setValue(String s) throws SQLException {
+        String[] ids = s.split("\\.");
+        if (ids.length == 2) {
+            setOid(Integer.parseInt(ids[0]));
+            setId(Integer.parseInt(ids[1]));
+        }
+        else {
+            throw new PSQLException(GT.tr("Conversion to type {0} failed: {1}.", new Object[]{type, s}),
+                    PSQLState.DATA_TYPE_MISMATCH);
+        }
+    }
+
+    public String getValue() {
+        return toString();
+    }
+
+    @Override
+    public void close() throws IOException {}
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null)
+            return false;
+        if (!GID.class.isAssignableFrom(obj.getClass()))
+            return false;
+        final GID other = (GID)obj;
+        if (this.getOid() != other.getOid())
+            return false;
+        if (this.getId() != other.getId())
+            return false;
+        return true;
     }
 }

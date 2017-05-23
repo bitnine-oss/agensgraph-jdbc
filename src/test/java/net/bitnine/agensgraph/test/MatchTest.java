@@ -18,10 +18,12 @@ package net.bitnine.agensgraph.test;
 
 import junit.framework.TestCase;
 import net.bitnine.agensgraph.graph.Edge;
+import net.bitnine.agensgraph.graph.GID;
 import net.bitnine.agensgraph.graph.Path;
 import net.bitnine.agensgraph.graph.Vertex;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 
@@ -103,5 +105,18 @@ public class MatchTest extends TestCase {
         assertEquals("manage[6.1][4.1,4.2]{}", rel.getValue());
 
         rs.close();
+    }
+
+    public void testBindGID() throws Exception {
+        ResultSet rs = st.executeQuery("MATCH (p:person {name: 'kskim'}) RETURN id(p)");
+        rs.next();
+        GID id = (GID)rs.getObject(1);
+        PreparedStatement pstmt = con.prepareStatement("MATCH (p:person) WHERE id(p) = ? RETURN p");
+        pstmt.setObject(1, id);
+        rs = pstmt.executeQuery();
+        rs.next();
+        Vertex person = (Vertex)rs.getObject(1);
+        assertEquals(id, person.getVertexId());
+        assertEquals("kskim", person.getString("name"));
     }
 }
