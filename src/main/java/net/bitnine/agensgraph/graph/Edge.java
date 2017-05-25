@@ -159,4 +159,12 @@ public class Edge extends PGobject implements Serializable, Closeable {
     public JsonArray getArray(String name, JsonArray defaultValue) {
         return props.getArray(name, defaultValue);
     }
+
+    public Object get(String name) {
+        return props.get(name);
+    }
+
+    public Object get(String name, Object defaultValue) {
+        return props.get(name, defaultValue);
+    }
 }

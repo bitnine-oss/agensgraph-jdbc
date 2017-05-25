@@ -122,6 +122,10 @@ public class JsonArray extends Jsonb {
         return array.get(index);
     }
 
+    public Object get(int index, Object defaultValue) {
+        return isOutOfBounds(index) || isNull(index) ? defaultValue : get(index);
+    }
+
     public boolean isNull(int index) { return null == get(index); }
 
     public boolean isOutOfBounds(int index) { return index < 0 || index >= array.size(); }
