@@ -1,6 +1,8 @@
 1.3.1 / 2017-05-23
 ------------------
 * Support for graphid binding
+* Add get(String name) to JsonObject class
+* Add get(int index) and toList() methods to JsonArray class
 
 1.3.0 / 2017-05-15
 ------------------

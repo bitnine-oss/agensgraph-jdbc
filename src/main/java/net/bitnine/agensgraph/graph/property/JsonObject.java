@@ -81,8 +81,12 @@ public class JsonObject extends Jsonb {
         return props.isEmpty();
     }
 
-    private Object get(String name) {
+    public Object get(String name) {
         return props.get(name);
+    }
+
+    public Object get(String name, Object defaultValue) {
+        return isNull(name) ? defaultValue : get(name);
     }
 
     public boolean isNull(String name) { return null == props.get(name); }
