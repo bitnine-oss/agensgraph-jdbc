@@ -81,7 +81,7 @@ public class JsonObject extends Jsonb {
         return props.isEmpty();
     }
 
-    private Object get(String name) {
+    public Object get(String name) {
         return props.get(name);
     }
 

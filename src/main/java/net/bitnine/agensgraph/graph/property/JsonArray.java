@@ -114,7 +114,11 @@ public class JsonArray extends Jsonb {
         return array.equals(o);
     }
 
-    private Object get(int index) {
+    public List<Object> toList() {
+        return (List<Object>) array.clone();
+    }
+
+    public Object get(int index) {
         return array.get(index);
     }
 

@@ -26,10 +26,7 @@ import net.bitnine.agensgraph.graph.property.JsonArray;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class PropertyTest extends TestCase {
 
@@ -146,5 +143,21 @@ public class PropertyTest extends TestCase {
             assertEquals(10.4D, array.getDouble(30, 10.4D));
             assertEquals("woodwork", array.getString(30, "woodwork"));
         }
+    }
+
+    public void testToList() throws Exception {
+        JsonArray arr = JsonArray.create("foo", true, "bar");
+        List<Object> newList = arr.toList();
+        assertEquals(true, (boolean) newList.get(1));
+    }
+
+    public void testGet() throws Exception {
+        JsonArray arr = JsonArray.create("foo", true, "bar");
+        JsonObject foo = JsonObject.create();
+        foo.put("name", "ktlee");
+        foo.put("age", 42);
+        foo.put("blahblah", arr);
+        assertEquals("ktlee", (String) foo.get("name"));
+        assertEquals("bar", ((JsonArray) foo.get("blahblah")).get(2));
     }
 }
