@@ -1,3 +1,7 @@
+1.3.2 / 2017-06-26
+------------------
+* Support for named parameters
+
 1.3.1 / 2017-05-23
 ------------------
 * Support for graphid binding
