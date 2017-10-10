@@ -47,9 +47,10 @@ public class ReturnTest extends TestCase {
     }
 
     public void testReturn() throws Exception {
-        ResultSet rs = st.executeQuery("RETURN 'be' || ' happy!', 1+1");
+        ResultSet rs = st.executeQuery("RETURN 'be' + ' happy!', 1 + 1");
         while (rs.next()) {
-            assertEquals("be happy!", rs.getString(1));
+            Jsonb j = (Jsonb)rs.getObject(1);
+            assertEquals("be happy!", j.getString());
             assertEquals(2, rs.getInt(2));
         }
         rs.close();
@@ -61,7 +62,7 @@ public class ReturnTest extends TestCase {
         JsonObject jo;
 
         Jsonb data = new Jsonb();
-        data.setJsonValue(JsonObject.create("{\"name\":\"ktlee\"}"));
+        data.setJsonValue(JsonObject.create("{\"name\": \"ktlee\"}"));
         pstmt.setObject(1, data);
         rs = pstmt.executeQuery();
         while (rs.next()) {

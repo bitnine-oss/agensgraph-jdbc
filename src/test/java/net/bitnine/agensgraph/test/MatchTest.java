@@ -40,34 +40,34 @@ public class MatchTest extends TestCase {
             dropSchema();
         }
         catch (Exception ignored) {}
-        st.execute("create graph u");
-        st.execute("set graph_path = u");
-        st.execute("create vlabel company");
-        st.execute("create vlabel person");
-        st.execute("create elabel employee");
-        st.execute("create elabel manage");
+        st.execute("CREATE GRAPH u");
+        st.execute("SET graph_path = u");
+        st.execute("CREATE VLABEL company");
+        st.execute("CREATE VLABEL person");
+        st.execute("CREATE ELABEL employee");
+        st.execute("CREATE ELABEL manage");
         create();
     }
 
     private void dropSchema() throws Exception {
-        st.execute("drop graph u cascade");
+        st.execute("DROP GRAPH u CASCADE");
     }
 
     private void create() throws Exception {
-        st.execute("create (:company '{\"name\":\"bitnine\"}')"
-                + "-[:employee]"
-                + "->(:person '{\"name\":\"kskim\"}')"
-                + "-[:manage]"
-                + "->(:person '{\"name\":\"ktlee\"}')");
-        st.execute("match (c:company '{\"name\":\"bitnine\"}') "
-                + "create (c)-[:employee]"
-                + "->(:person '{\"name\":\"jsyang\"}')");
-        st.execute("match (c:company '{\"name\":\"bitnine\"}') "
-                + ", (p:person '{\"name\":\"ktlee\"}') "
-                + "create (c)-[:employee]->(p)");
-        st.execute("match (m:person '{\"name\":\"kskim\"}')"
-                +", (p:person '{\"name\":\"jsyang\"}') "
-                +"create (m)-[:manage]->(p)");
+        st.execute("CREATE (:company {name: 'bitnine'})"
+                + "-[:employee]->"
+                + "(:person {name: 'kskim'})"
+                + "-[:manage]->"
+                + "(:person {name: 'ktlee'})");
+        st.execute("MATCH (c:company {name: 'bitnine'}) "
+                + "CREATE (c)-[:employee]->"
+                + "(:person {name: 'jsyang'})");
+        st.execute("MATCH (c:company {name: 'bitnine'}), "
+                + "(p:person {name: 'ktlee'}) "
+                + "CREATE (c)-[:employee]->(p)");
+        st.execute("MATCH (m:person {name: 'kskim'}), "
+                +"(p:person {name: 'jsyang'}) "
+                +"CREATE (m)-[:manage]->(p)");
     }
 
     public void tearDown() throws Exception {

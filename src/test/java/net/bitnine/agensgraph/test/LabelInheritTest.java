@@ -36,20 +36,20 @@ public class LabelInheritTest extends TestCase {
             dropSchema();
         }
         catch (Exception ignored) {}
-        st.execute("create graph u");
-        st.execute("set graph_path = u");
-        st.execute("create vlabel parent");
-        st.execute("create vlabel child inherits (parent)");
+        st.execute("CREATE GRAPH u");
+        st.execute("SET graph_path = u");
+        st.execute("CREATE VLABEL parent");
+        st.execute("CREATE VLABEL child INHERITS (parent)");
         create();
     }
 
     private void create() throws Exception {
-        st.execute("create (:parent '{\"name\":\"father\"}')");
-        st.execute("create (:child '{\"name\":\"son\"}')");
+        st.execute("CREATE (:parent {name: 'father'})");
+        st.execute("CREATE (:child {name: 'son'})");
     }
 
     private void dropSchema() throws Exception {
-        st.execute("drop graph u cascade");
+        st.execute("DROP GRAPH u CASCADE");
     }
 
     public void tearDown() throws Exception {

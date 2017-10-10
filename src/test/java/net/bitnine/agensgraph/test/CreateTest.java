@@ -37,13 +37,13 @@ public class CreateTest extends TestCase {
             dropSchema();
         }
         catch (Exception ignored) {}
-        st.execute("create graph u");
-        st.execute("set graph_path = u");
-        st.execute("create vlabel person");
+        st.execute("CREATE GRAPH u");
+        st.execute("SET graph_path = u");
+        st.execute("CREATE VLABEL person");
     }
 
     private void dropSchema() throws Exception {
-        st.execute("drop graph u cascade");
+        st.execute("DROP GRAPH u CASCADE");
     }
 
     public void tearDown() throws Exception {
@@ -53,14 +53,14 @@ public class CreateTest extends TestCase {
     }
 
     public void testCreateWithBind() throws Exception {
-        PreparedStatement pstmt = con.prepareStatement("CREATE ( :person { 'name': 'XXX', 'from': 'Sweden', 'klout': ? } )");
+        PreparedStatement pstmt = con.prepareStatement("CREATE (:person {name: 'XXX', from: 'Sweden', klout: ?})");
         pstmt.setInt(1, 99);
         boolean inserted = pstmt.execute();
         assertFalse(inserted);
     }
 
     public void testCreateWithBind_WholeProp() throws Exception {
-        PreparedStatement pstmt = con.prepareStatement("CREATE ( :person ? )");
+        PreparedStatement pstmt = con.prepareStatement("CREATE (:person ?)");
         JsonObject ktlee = new JsonObject();
         ktlee.put("name", "ktlee");
         ktlee.put("from", "Korea");
@@ -71,7 +71,7 @@ public class CreateTest extends TestCase {
     }
 
     public void testCreateWithBind_PrimitiveProp() throws Exception {
-        PreparedStatement pstmt = con.prepareStatement("CREATE ( :person ? )");
+        PreparedStatement pstmt = con.prepareStatement("CREATE (:person ?)");
         pstmt.setObject(1, new Jsonb(10));
         try {
             pstmt.execute();
@@ -83,7 +83,7 @@ public class CreateTest extends TestCase {
     }
 
     public void testCreate_EscapeSyntax() throws Exception {
-        PreparedStatement pstmt = con.prepareStatement("CREATE ( :person {txid: ?} )");
+        PreparedStatement pstmt = con.prepareStatement("CREATE (:person {txid: ?})");
         pstmt.setObject(1, new Jsonb(10));
         try {
             pstmt.execute();

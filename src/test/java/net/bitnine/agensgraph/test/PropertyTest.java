@@ -41,26 +41,26 @@ public class PropertyTest extends TestCase {
             dropSchema();
         }
         catch (Exception ignored) {}
-        st.execute("create graph u");
-        st.execute("set graph_path = u");
-        st.execute("create vlabel company");
-        st.execute("create vlabel person");
-        st.execute("create elabel employee");
+        st.execute("CREATE GRAPH u");
+        st.execute("SET graph_path = u");
+        st.execute("CREATE VLABEL company");
+        st.execute("CREATE VLABEL person");
+        st.execute("CREATE ELABEL employee");
         create();
     }
 
     private void create() throws Exception {
-        st.execute("create (:company '{\"name\":\"bitnine\"}')"
-                + "-[:employee '{\"no\":1}']"
-                + "->(:person '{\"name\":\"jsyang\",\"age\":20,\"height\":178.5,\"married\":false}')");
-        st.execute("create (:company '{\"name\":\"bitnine\"}')"
-                + "-[:employee '{\"no\":2}']"
-                + "->(:person '{\"name\":\"ktlee\",\"hobbies\":[\"reading\",\"climbing\"],\"age\":null}')");
-        st.execute("CREATE (:person '{ \"name\": \"Emil\", \"from\": \"Sweden\", \"klout\": 99}')");
+        st.execute("CREATE (:company {name: 'bitnine'})"
+                + "-[:employee {no: 1}]->"
+                + "(:person {name: 'jsyang', age: 20, height: 178.5, married: false})");
+        st.execute("CREATE (:company {name: 'bitnine'})"
+                + "-[:employee {no: 2}]->"
+                + "(:person {name: 'ktlee', hobbies: ['reading', 'climbing'], age: null})");
+        st.execute("CREATE (:person {name: 'Emil', from: 'Sweden', klout: 99})");
     }
 
     private void dropSchema() throws Exception {
-        st.execute("drop graph u cascade");
+        st.execute("DROP GRAPH u CASCADE");
     }
 
     public void tearDown() throws Exception {
@@ -70,14 +70,14 @@ public class PropertyTest extends TestCase {
     }
 
     public void testProperty() throws Exception {
-        ResultSet rs = st.executeQuery("MATCH (n)-[:employee '{\"no\":1}']->(m) RETURN n, m");
+        ResultSet rs = st.executeQuery("MATCH (n)-[:employee {no: 1}]->(m) RETURN n, m");
         while (rs.next()) {
             Vertex n = (Vertex) rs.getObject("m");
             assertEquals(20, (int)n.getInt("age"));
             assertEquals(178.5, n.getDouble("height"));
             assertFalse(n.getBoolean("married"));
         }
-        rs = st.executeQuery("MATCH (n)-['{\"no\":2}']->(m) RETURN n, m");
+        rs = st.executeQuery("MATCH (n)-[{no: 2}]->(m) RETURN n, m");
         while (rs.next()) {
             Vertex n = (Vertex) rs.getObject("m");
             JsonArray array = n.getArray("hobbies");
@@ -85,22 +85,22 @@ public class PropertyTest extends TestCase {
             Long age = n.getLong("age");
             assertEquals(null, age);
         }
-        rs = st.executeQuery("MATCH (n)-['{\"no\":2}']->(m) RETURN m.hobbies::jsonb as hobbies");
+        rs = st.executeQuery("MATCH (n)-[{no: 2}]->(m) RETURN m.hobbies AS hobbies");
         while (rs.next()) {
             Jsonb val = (Jsonb)rs.getObject("hobbies");
             assertEquals("reading", val.ja().getString(0));
         }
-        rs = st.executeQuery("MATCH (ee:person) WHERE ee.klout::int = 99 "
-                + "RETURN to_jsonb(ee.name::text), ee.name");
+        rs = st.executeQuery("MATCH (ee:person) WHERE ee.klout = 99 "
+                + "RETURN ee.name, ee.name");
         assertTrue(rs.next());
         Object val = rs.getObject(1);
         assertTrue(val instanceof Jsonb);
         Jsonb jval = (Jsonb)val;
         assertEquals(JsonType.STRING, jval.getJsonType());
         String name = jval.getString();
-        assertEquals("Emil", name);;
+        assertEquals("Emil", name);
         String qname = rs.getString(2);
-        assertEquals("Emil", qname);
+        assertEquals("\"Emil\"", qname);
         assertFalse(rs.next());
         rs.close();
     }
@@ -130,7 +130,7 @@ public class PropertyTest extends TestCase {
     }
 
     public void testDefaultValue() throws Exception {
-        ResultSet rs = st.executeQuery("MATCH (n)-['{\"no\":2}']->(m) RETURN n, m");
+        ResultSet rs = st.executeQuery("MATCH (n)-[{no: 2}]->(m) RETURN n, m");
         while (rs.next()) {
             Vertex n = (Vertex) rs.getObject("m");
             assertEquals(true, (boolean) n.getBoolean("invalid key", true));
