@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2016, Bitnine Inc.
+ * Copyright (c) 2014-2017, Bitnine Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,85 +16,119 @@
 
 package net.bitnine.agensgraph.graph;
 
-import java.io.Closeable;
-import java.io.IOException;
-import java.io.Serializable;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import net.bitnine.agensgraph.util.TopCommaTokenizer;
-import org.postgresql.util.GT;
 import org.postgresql.util.PGobject;
-import org.postgresql.util.PGtokenizer;
 import org.postgresql.util.PSQLException;
 import org.postgresql.util.PSQLState;
 
-public class Path
-        extends PGobject
-        implements Serializable, Closeable {
+import java.io.Serializable;
+import java.sql.SQLException;
+import java.util.ArrayList;
 
-    private List<Vertex> vertexs;
-    private List<Edge> edges;
-    private String s;
+public class Path extends PGobject implements Serializable, Cloneable {
+    private ArrayList<Vertex> vertices;
+    private ArrayList<Edge> edges;
 
     public Path() {
-        setType("path");
+        setType("graphpath");
     }
 
     @Override
-    public void setValue(String s) throws SQLException {
-        this.s = s;
-        vertexs = new ArrayList<>();
-        edges = new ArrayList<>();
-        String p = PGtokenizer.removeBox(this.s);
-        TopCommaTokenizer t;
-        try {
-            t = new TopCommaTokenizer(p);
+    public void setValue(String value) throws SQLException {
+        ArrayList<String> tokens = tokenize(value);
+        ArrayList<Vertex> vertices = new ArrayList<>();
+        ArrayList<Edge> edges = new ArrayList<>();
+        for (int i = 0; i < tokens.size(); i++) {
+            if (i % 2 == 0) {
+                Vertex v = new Vertex();
+                v.setValue(tokens.get(i));
+                vertices.add(v);
+            } else {
+                Edge e = new Edge();
+                e.setValue(tokens.get(i));
+                edges.add(e);
+            }
         }
-        catch (Exception e) {
-            throw new PSQLException(GT.tr(
-                        "Conversion to type {0} failed: {1}."
-                        , new Object[]{type, s})
-                    , PSQLState.DATA_TYPE_MISMATCH);
+        this.vertices = vertices;
+        this.edges = edges;
+
+        super.setValue(value);
+    }
+
+    private ArrayList<String> tokenize(String value) throws SQLException {
+        ArrayList<String> tokens = new ArrayList<>();
+
+        // ignore wrapping '[' and ']' characters
+        int pos = 1;
+        int len = value.length() -1;
+
+        int start = pos;
+        int depth = 0;
+        boolean gid = false;
+
+        while (pos < len) {
+            char c = value.charAt(pos);
+
+            switch (c) {
+                case '"':
+                    if (depth > 0) {
+                        // parse "string"
+                        int i = pos + 1;
+                        while (i > -1 && i < len) {
+                            i = value.indexOf('"', i);
+                            if (value.charAt(i - 1) != '\\')
+                                break;
+                        }
+                        if (i > pos)
+                            pos = i;
+
+                        // leave pos unchanged if unmatched right " were found
+                    }
+                    break;
+                case '[':
+                    if (depth == 0)
+                        gid = true;
+                    break;
+                case ']':
+                    if (depth == 0)
+                        gid = false;
+                    break;
+                case '{':
+                    depth++;
+                    break;
+                case '}':
+                    depth--;
+                    if (depth < 0) {
+                        throw new PSQLException("Parsing graphpath failed", PSQLState.DATA_ERROR);
+                    }
+                    break;
+                case ',':
+                    if (depth == 0 && !gid) {
+                        tokens.add(value.substring(start, pos));
+                        start = pos + 1;
+                    }
+                    break;
+                default:
+                    break;
+            }
+
+            pos++;
         }
-        for (int i = 0; i < t.getSize(); ++i) {
-            if (i % 2 == 0)
-                vertexs.add(new Vertex(t.getToken(i)));
-            else
-                edges.add(new Edge(t.getToken(i)));
-        }
+
+        /* add the last token */
+        tokens.add(value.substring(start, pos));
+
+        return tokens;
     }
 
-    @Override
-    public String getValue() {
-        return s;
-    }
-
-    @Override
-    public void close() throws IOException {
-    }
-
-    public Vertex start() {
-        return vertexs.get(0);
-    }
-
-    public Vertex end() {
-        int size = vertexs.size();
-        if (0 == size)
-            return null;
-        else
-            return vertexs.get(size - 1);
-    }
-
-    public int length() {
-        return edges.size();
-    }
-
-    public Iterable<Vertex> vertexs() {
-        return vertexs;
+    public Iterable<Vertex> vertices() {
+        return vertices;
     }
 
     public Iterable<Edge> edges() {
         return edges;
+    }
+
+    public int length() {
+        return edges.size();
     }
 }

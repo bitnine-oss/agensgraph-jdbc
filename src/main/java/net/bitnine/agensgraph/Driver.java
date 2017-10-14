@@ -1,18 +1,28 @@
-/*-------------------------------------------------------------------------
-*
-* Portions Copyright (c) 2014-2016, Bitnine Inc.
-* Copyright (c) 2003-2014, PostgreSQL Global Development Group
-*
-*
-*-------------------------------------------------------------------------
-*/
+/*
+ * Copyright (c) 2014-2017, Bitnine Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/*
+ * Borrowed from PostgreSQL JDBC driver
+ */
 
 package net.bitnine.agensgraph;
 
+import net.bitnine.agensgraph.jdbc.AgConnection;
+import net.bitnine.agensgraph.util.DriverInfo;
 import org.postgresql.PGProperty;
-
-import org.postgresql.jdbc.PgConnection;
-
 import org.postgresql.util.ExpressionProperties;
 import org.postgresql.util.GT;
 import org.postgresql.util.HostSpec;
@@ -239,14 +249,6 @@ public class Driver implements java.sql.Driver {
       LOGGER.log(Level.SEVERE, "Error in url: {0}", url);
       return null;
     }
-
-    // add properties for additional datatypes in Agens Graph
-    props.setProperty("datatype.vertex", "net.bitnine.agensgraph.graph.Vertex");
-    props.setProperty("datatype.edge", "net.bitnine.agensgraph.graph.Edge");
-    props.setProperty("datatype.graphpath", "net.bitnine.agensgraph.graph.Path");
-    props.setProperty("datatype.jsonb", "net.bitnine.agensgraph.graph.property.Jsonb");
-    props.setProperty("datatype.graphid", "net.bitnine.agensgraph.graph.GID");
-
     try {
       // Setup java.util.logging.Logger using connection properties.
       setupLoggerFromProperties(props);
@@ -461,7 +463,7 @@ public class Driver implements java.sql.Driver {
    * @throws SQLException if the connection could not be made
    */
   private static Connection makeConnection(String url, Properties props) throws SQLException {
-    return new PgConnection(hostSpecs(props), user(props), database(props), props, url);
+    return new AgConnection(hostSpecs(props), user(props), database(props), props, url);
   }
 
   /**
@@ -509,12 +511,12 @@ public class Driver implements java.sql.Driver {
 
   @Override
   public int getMajorVersion() {
-    return org.postgresql.util.DriverInfo.MAJOR_VERSION;
+    return DriverInfo.MAJOR_VERSION;
   }
 
   @Override
   public int getMinorVersion() {
-    return org.postgresql.util.DriverInfo.MINOR_VERSION;
+    return DriverInfo.MINOR_VERSION;
   }
 
   /**
@@ -591,9 +593,19 @@ public class Driver implements java.sql.Driver {
       urlProps.setProperty("PGPORT", ports.toString());
       urlProps.setProperty("PGHOST", hosts.toString());
     } else {
-      urlProps.setProperty("PGPORT", "5432");
-      urlProps.setProperty("PGHOST", "localhost");
-      urlProps.setProperty("PGDBNAME", URLDecoder.decode(l_urlServer));
+      /*
+       if there are no defaults set or any one of PORT, HOST, DBNAME not set
+       then set it to default
+      */
+      if (defaults == null || !defaults.containsKey("PGPORT")) {
+        urlProps.setProperty("PGPORT", "5432");
+      }
+      if (defaults == null || !defaults.containsKey("PGHOST")) {
+        urlProps.setProperty("PGHOST", "localhost");
+      }
+      if (defaults == null || !defaults.containsKey("PGDBNAME")) {
+        urlProps.setProperty("PGDBNAME", URLDecoder.decode(l_urlServer));
+      }
     }
 
     // parse the args part of the url

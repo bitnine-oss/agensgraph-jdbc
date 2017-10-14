@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2016, Bitnine Inc.
+ * Copyright (c) 2014-2017, Bitnine Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,143 +16,95 @@
 
 package net.bitnine.agensgraph.graph;
 
-import net.bitnine.agensgraph.graph.property.JsonArray;
-import net.bitnine.agensgraph.graph.property.JsonObject;
-import org.postgresql.util.GT;
+import net.bitnine.agensgraph.util.Jsonb;
+import org.json.simple.JSONObject;
 import org.postgresql.util.PGobject;
 import org.postgresql.util.PSQLException;
 import org.postgresql.util.PSQLState;
 
-import java.io.Closeable;
-import java.io.IOException;
 import java.io.Serializable;
 import java.sql.SQLException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class Vertex extends PGobject implements Serializable, Closeable {
-    private static final Pattern _pattern;
-    static {
-        _pattern = Pattern.compile("(.+)\\[(\\d+)\\.(\\d+)\\](.*)");
-    }
+public class Vertex extends PGobject implements Serializable, Cloneable {
+    private static final Pattern vertexPattern;
 
     private String label;
-    private GID vid;
-    private JsonObject props;
+    private GraphId vid;
+    private Jsonb props;
 
-    @SuppressWarnings("WeakerAccess")
+    static {
+        vertexPattern = Pattern.compile("(.+?)\\[(.+?)\\](.*)");
+    }
+
     public Vertex() {
         setType("vertex");
     }
 
-    Vertex(String s) throws SQLException {
-        this();
-        setValue(s);
-    }
-
     @Override
-    public void setValue(String s) throws SQLException {
-        Matcher m = _pattern.matcher(s);
+    public void setValue(String value) throws SQLException {
+        Matcher m = vertexPattern.matcher(value);
         if (m.find()) {
-            label = m.group(1);
-            vid = new GID(Integer.parseInt(m.group(2)), Integer.parseInt(m.group(3)));
-            String property = m.group(4);
-            if (property == null)
-                props = null;
-            else
-                props = new JsonObject(property);
+            this.label = m.group(1);
+
+            GraphId gid = new GraphId();
+            gid.setValue(m.group(2));
+            this.vid = gid;
+
+            Jsonb props = new Jsonb();
+            props.setValue(m.group(3));
+            if (!(props.getJsonValue() instanceof JSONObject))
+                throw new PSQLException("Parsing vertex failed", PSQLState.DATA_ERROR);
+            this.props = props;
         } else {
-            throw new PSQLException(GT.tr("Conversion to type {0} failed: {1}.", new Object[]{type, s}),
-                    PSQLState.DATA_TYPE_MISMATCH);
+            throw new PSQLException("Parsing vertex failed", PSQLState.DATA_ERROR);
         }
-    }
 
-    public String getValue() {
-        return label + "[" + vid.toString() + "]" + ((props == null) ? "" : props.toString());
-    }
-
-    @Override
-    public void close() throws IOException {
+        super.setValue(value);
     }
 
     public String getLabel() {
         return label;
     }
 
-    public JsonObject getProperty() {
-        return props;
-    }
-
-    @Override
-    public String toString() {
-        return getValue();
-    }
-
-    public GID getVertexId() {
+    public GraphId getVertexId() {
         return vid;
     }
 
-    public Boolean getBoolean(String name) {
-        return props.getBoolean(name);
+    public Jsonb getProperties() {
+        return props;
     }
 
-    public Boolean getBoolean(String name, Boolean defaultValue) {
-        return props.getBoolean(name, defaultValue);
+    public String getString(String key) {
+        return props.getString(key);
     }
 
-    public Integer getInt(String name) {
-        return props.getInt(name);
+    public int getInt(String key) {
+        return props.getInt(key);
     }
 
-    public Integer getInt(String name, Integer defaultValue) {
-        return props.getInt(name, defaultValue);
+    public long getLong(String key) {
+        return props.getLong(key);
     }
 
-    public Long getLong(String name) {
-        return props.getLong(name);
+    public double getDouble(String key) {
+        return props.getDouble(key);
     }
 
-    public Long getLong(String name, Long defaultValue) {
-        return props.getLong(name, defaultValue);
+    public boolean getBoolean(String key) {
+        return props.getBoolean(key);
     }
 
-    public Double getDouble(String name) {
-        return props.getDouble(name);
+    public boolean isNull(String key) {
+        return props.isNull(key);
     }
 
-    public Double getDouble(String name, Double defaultValue) {
-        return props.getDouble(name, defaultValue);
+    public Jsonb getArray(String key) {
+        return props.getArray(key);
     }
 
-    public String getString(String name) {
-        return props.getString(name);
+    public Jsonb getObject(String key) {
+        return props.getObject(key);
     }
-
-    public String getString(String name, String defaultValue) {
-        return props.getString(name, defaultValue);
-    }
-
-    public JsonObject getObject(String name) {
-        return props.getObject(name);
-    }
-
-    public JsonObject getObject(String name, JsonObject defaultValue) {
-        return props.getObject(name, defaultValue);
-    }
-
-    public JsonArray getArray(String name) {
-        return props.getArray(name);
-    }
-
-    public JsonArray getArray(String name, JsonArray defaultValue) {
-        return props.getArray(name, defaultValue);
-    }
-
-    public Object get(String name) {
-        return props.get(name);
-    }
-
-    public Object get(String name, Object defaultValue) {
-        return props.get(name, defaultValue);
-    }
- }
+}

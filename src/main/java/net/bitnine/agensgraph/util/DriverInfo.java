@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2016, Bitnine Inc.
+ * Copyright (c) 2014-2017, Bitnine Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,17 @@
  * limitations under the License.
  */
 
-package net.bitnine.agensgraph.graph.property;
+package net.bitnine.agensgraph.util;
 
-public enum JsonType {
-    OBJECT, ARRAY, STRING, LONG, DOUBLE, BOOLEAN, NULL
+public final class DriverInfo {
+    private DriverInfo() {
+    }
+
+    public static final String DRIVER_NAME = "AgensGraph JDBC Driver";
+    public static final String DRIVER_VERSION = "1.4.0";
+    public static final String DRIVER_FULL_NAME = DRIVER_NAME + " " + DRIVER_VERSION;
+
+    public static final int MAJOR_VERSION = 1;
+    public static final int MINOR_VERSION = 4;
+    public static final int PATCH_VERSION = 0;
 }

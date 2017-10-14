@@ -1,11 +1,18 @@
-/*-------------------------------------------------------------------------
-*
-* Portions Copyright (c) 2014-2016, Bitnine Inc.
-* Copyright (c) 2004-2014, PostgreSQL Global Development Group
-*
-*
-*-------------------------------------------------------------------------
-*/
+/*
+ * Copyright (c) 2014-2017, Bitnine Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package net.bitnine.agensgraph.test;
 
@@ -81,6 +88,7 @@ public class TestUtil {
         + server + ":"
         + port + "/"
         + getDatabase()
+        + "?ApplicationName=Driver Tests"
         + logLevel
         + logFile
         + protocolVersion
@@ -262,8 +270,7 @@ public class TestUtil {
    * @return connection using a priviliged user mostly for tests that the ability to load C
    *         functions now as of 4/14
    */
-  public static java.sql.Connection openPrivilegedDB() throws Exception {
-
+  public static Connection openPrivilegedDB() throws Exception {
     initDriver();
     Properties properties = new Properties();
     properties.setProperty("user", getPrivilegedUser());
@@ -277,7 +284,7 @@ public class TestUtil {
    *
    * @return connection
    */
-  public static java.sql.Connection openDB() throws Exception {
+  public static Connection openDB() throws Exception {
     return openDB(new Properties());
   }
 
@@ -285,7 +292,7 @@ public class TestUtil {
    * Helper - opens a connection with the allowance for passing additional parameters, like
    * "compatible".
    */
-  public static java.sql.Connection openDB(Properties props) throws Exception {
+  public static Connection openDB(Properties props) throws Exception {
     initDriver();
 
     // Allow properties to override the user name.
@@ -617,6 +624,9 @@ public class TestUtil {
   }
 
   public static String escapeString(Connection con, String value) throws SQLException {
+    if (con == null) {
+      throw new NullPointerException("Connection is null");
+    }
     if (con instanceof PgConnection) {
       return ((PgConnection) con).escapeString(value);
     }
@@ -624,6 +634,9 @@ public class TestUtil {
   }
 
   public static boolean getStandardConformingStrings(Connection con) {
+    if (con == null) {
+      throw new NullPointerException("Connection is null");
+    }
     if (con instanceof PgConnection) {
       return ((PgConnection) con).getStandardConformingStrings();
     }
@@ -636,6 +649,9 @@ public class TestUtil {
    * connection.
    */
   public static boolean haveMinimumServerVersion(Connection con, int version) throws SQLException {
+    if (con == null) {
+      throw new NullPointerException("Connection is null");
+    }
     if (con instanceof PgConnection) {
       return ((PgConnection) con).haveMinimumServerVersion(version);
     }
@@ -644,6 +660,9 @@ public class TestUtil {
 
   public static boolean haveMinimumServerVersion(Connection con, Version version)
       throws SQLException {
+    if (con == null) {
+      throw new NullPointerException("Connection is null");
+    }
     if (con instanceof PgConnection) {
       return ((PgConnection) con).haveMinimumServerVersion(version);
     }
@@ -655,10 +674,12 @@ public class TestUtil {
     return (jvm.compareTo(version) >= 0);
   }
 
-  public static boolean isProtocolVersion(Connection con, int version) {
+  public static boolean haveIntegerDateTimes(Connection con) {
+    if (con == null) {
+      throw new NullPointerException("Connection is null");
+    }
     if (con instanceof PgConnection) {
-      return (version == ((PgConnection) con).getProtocolVersion());
-
+      return ((PgConnection) con).getQueryExecutor().getIntegerDateTimes();
     }
     return false;
   }
