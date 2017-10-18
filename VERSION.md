@@ -1,3 +1,29 @@
+1.4.0 / 2017-10-14
+------------------
+* Improve `Vertex`, `Edge`, and `Path` class
+* Fix bugs in parsing routine for `graphpath` type
+  * Merge the logic into `Path` and remove `TopCommaTokenizer`
+* Change `GID` to `GraphId` and improve it
+* Improve `Jsonb` and move it to `net.bitnine.agensgraph.util` package
+* Introduce `AgConnection`, `AgStatement`, and `AgResultSet`
+  * Remove surrounding '"' character from JSON string
+  * Handle JSON values properly
+* Improve named parameter feature
+  * Introduce `AgPreparedStatement`
+  * Merge features in `NamedParameterStatement` into `AgPreparedStatement`
+  * Improve parsing routine for named parameters
+* Rewrite the API to create JSON value
+  * Introduce `JsonUtil`, `JsonbArrayBuilder`, and `JsonbObjectBuilder`
+  * Remove `JsonArray` and `JsonObject`
+* Remove unused classes
+  * `AbstractDatabaseMetaData`
+  * `AgensGraphConnection`
+  * `AgensGraphDatabaseMetaData`
+* Remove all existing tests and write unit tests
+* Upgrade PostgreSQL JDBC Driver from 42.1.1.jre7 to 42.1.4.jre7
+* Change version from 1.3.2 to 1.4.0
+* Update README
+
 1.3.2 / 2017-06-26
 ------------------
 * Support for named parameters
