@@ -53,7 +53,7 @@ public class PathTest extends TestCase {
     @Test
     public void testPath() throws SQLException {
         Statement stmt = conn.createStatement();
-        ResultSet rs = stmt.executeQuery("CREATE p=({s: '[}'})-[:e]->() RETURN p");
+        ResultSet rs = stmt.executeQuery("CREATE p=({s: '[}\\\\\"'})-[:e]->() RETURN p");
         assertTrue(rs.next());
 
         Path p = (Path) rs.getObject(1);

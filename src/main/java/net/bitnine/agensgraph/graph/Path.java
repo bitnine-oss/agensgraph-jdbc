@@ -71,17 +71,24 @@ public class Path extends PGobject implements Serializable, Cloneable {
             switch (c) {
                 case '"':
                     if (depth > 0) {
-                        // parse "string"
-                        int i = pos + 1;
-                        while (i > -1 && i < len) {
-                            i = value.indexOf('"', i);
-                            if (value.charAt(i - 1) != '\\')
-                                break;
+                        // Parse "string".
+                        // Leave pos unchanged if unmatched right " were found.
+                        boolean escape = false;
+                        for (int i = pos + 1; i < len; i++) {
+                            c = value.charAt(i);
+                            if (c == '\\') {
+                                escape = !escape;
+                            } else if (c == '"') {
+                                if (escape)
+                                    escape = false;
+                                else {
+                                    pos = i;
+                                    break;
+                                }
+                            } else {
+                                escape = false;
+                            }
                         }
-                        if (i > pos)
-                            pos = i;
-
-                        // leave pos unchanged if unmatched right " were found
                     }
                     break;
                 case '[':
