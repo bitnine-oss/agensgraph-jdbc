@@ -62,41 +62,9 @@ public class JsonbUtil {
         return builder.build();
     }
 
-    public static Jsonb createArray(int... values) {
+    public static Jsonb createArray(Object... values) {
         JsonbArrayBuilder builder = createArrayBuilder();
-        for (int value : values)
-            builder.add((long) value);
-
-        return builder.build();
-    }
-
-    public static Jsonb createArray(long... values) {
-        JsonbArrayBuilder builder = createArrayBuilder();
-        for (long value : values)
-            builder.add(value);
-
-        return builder.build();
-    }
-
-    public static Jsonb createArray(double... values) {
-        JsonbArrayBuilder builder = createArrayBuilder();
-        for (double value : values)
-            builder.add(value);
-
-        return builder.build();
-    }
-
-    public static Jsonb createArray(boolean... values) {
-        JsonbArrayBuilder builder = createArrayBuilder();
-        for (boolean value : values)
-            builder.add(value);
-
-        return builder.build();
-    }
-
-    public static Jsonb createArray(Jsonb... values) {
-        JsonbArrayBuilder builder = createArrayBuilder();
-        for (Jsonb value : values)
+        for (Object value : values)
             builder.add(value);
 
         return builder.build();
@@ -120,11 +88,8 @@ public class JsonbUtil {
 
     public static Jsonb createObject(Map<String, ?> map) {
         JsonbObjectBuilder builder = createObjectBuilder();
-        for (Map.Entry<String, ?> entry : map.entrySet()) {
-            Object value = entry.getValue();
-            value = filterValueType(value);
-            builder.add(entry.getKey(), value);
-        }
+        for (Map.Entry<String, ?> entry : map.entrySet())
+            builder.add(entry.getKey(), entry.getValue());
 
         return builder.build();
     }
@@ -144,6 +109,10 @@ public class JsonbUtil {
             return value;
         else if (value instanceof Jsonb)
             return ((Jsonb) value).getJsonValue();
+        else if (value instanceof Map)
+            return JsonbUtil.createObject((Map<String, ?>) value);
+        else if (value instanceof Iterable)
+            return JsonbUtil.createArray((Iterable<?>) value);
         else
             throw new IllegalArgumentException("Invalid json value type");
     }

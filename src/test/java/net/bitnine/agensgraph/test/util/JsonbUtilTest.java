@@ -19,6 +19,8 @@ package net.bitnine.agensgraph.test.util;
 import junit.framework.TestCase;
 import net.bitnine.agensgraph.util.Jsonb;
 import net.bitnine.agensgraph.util.JsonbUtil;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -117,9 +119,11 @@ public class JsonbUtilTest extends TestCase {
                 JsonbUtil.create(false),
                 JsonbUtil.createNull(),
                 JsonbUtil.createArray(),
-                JsonbUtil.createObject());
-        assertEquals(7, j.size());
-        assertEquals("[\"\",0,0.0,false,null,[],{}]", j.toString());
+                JsonbUtil.createObject(),
+                new JSONArray(),
+                new JSONObject());
+        assertEquals(9, j.size());
+        assertEquals("[\"\",0,0.0,false,null,[],{},[],{}]", j.toString());
 
         List<Object> a = new ArrayList<>();
         a.add("");
@@ -129,9 +133,11 @@ public class JsonbUtilTest extends TestCase {
         a.add(null);
         a.add(JsonbUtil.createArray());
         a.add(JsonbUtil.createObject());
+        a.add(new JSONArray());
+        a.add(new JSONObject());
         j = JsonbUtil.createArray(a);
-        assertEquals(7, j.size());
-        assertEquals("[\"\",0,0.0,false,null,[],{}]", j.toString());
+        assertEquals(9, j.size());
+        assertEquals("[\"\",0,0.0,false,null,[],{},[],{}]", j.toString());
     }
 
     @Test
@@ -142,8 +148,10 @@ public class JsonbUtilTest extends TestCase {
 
         Map<String, Object> m = new HashMap<>();
         m.put("i", 0);
+        m.put("a", new JSONArray());
+        m.put("o", new JSONObject());
         j = JsonbUtil.createObject(m);
-        assertEquals(1, j.size());
-        assertEquals("{\"i\":0}", j.toString());
+        assertEquals(3, j.size());
+        assertEquals("{\"a\":[],\"i\":0,\"o\":{}}", j.toString());
     }
 }
