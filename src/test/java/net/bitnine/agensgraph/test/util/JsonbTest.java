@@ -632,6 +632,8 @@ public class JsonbTest extends TestCase {
 
         Jsonb j = (Jsonb) rs.getObject(1);
         assertEquals(7, j.size());
+        assertFalse(j.containsKey("x"));
+        assertTrue(j.containsKey("s"));
         assertEquals("", j.getString("s"));
         assertEquals(0, j.getInt("l"));
         assertEquals(0, j.getLong("l"));

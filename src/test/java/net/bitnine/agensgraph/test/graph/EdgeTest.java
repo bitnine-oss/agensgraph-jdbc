@@ -63,6 +63,8 @@ public class EdgeTest extends TestCase {
         assertEquals("e", e.getLabel());
         assertEquals(e.getStartVertexId(), v0.getVertexId());
         assertEquals(e.getEndVertexId(), v1.getVertexId());
+        assertFalse(e.containsKey("x"));
+        assertTrue(e.containsKey("s"));
         assertEquals("", e.getString("s"));
         assertEquals(0, e.getInt("l"));
         assertEquals(0, e.getLong("l"));

@@ -26,7 +26,7 @@ import org.postgresql.util.PSQLState;
 import java.io.Serializable;
 import java.sql.SQLException;
 
-public class Jsonb extends PGobject implements Serializable, Cloneable {
+public class Jsonb extends PGobject implements JsonbObject, Serializable, Cloneable {
     private Object jsonValue = null;
 
     public Jsonb() {
@@ -209,14 +209,6 @@ public class Jsonb extends PGobject implements Serializable, Cloneable {
         return getBoolean(a.get(index));
     }
 
-    public boolean isNull(int index) {
-        if (!(jsonValue instanceof JSONArray))
-            throw new UnsupportedOperationException("Not an array: " + jsonValue);
-
-        JSONArray a = (JSONArray) jsonValue;
-        return a.get(index) == null;
-    }
-
     public Jsonb getArray(int index) {
         if (!(jsonValue instanceof JSONArray))
             throw new UnsupportedOperationException("Not an array: " + jsonValue);
@@ -233,6 +225,24 @@ public class Jsonb extends PGobject implements Serializable, Cloneable {
         return getObject(a.get(index));
     }
 
+    public boolean isNull(int index) {
+        if (!(jsonValue instanceof JSONArray))
+            throw new UnsupportedOperationException("Not an array: " + jsonValue);
+
+        JSONArray a = (JSONArray) jsonValue;
+        return a.get(index) == null;
+    }
+
+    @Override
+    public boolean containsKey(String key) {
+        if (!(jsonValue instanceof JSONObject))
+            throw new UnsupportedOperationException("Not an object: " + jsonValue);
+
+        JSONObject o = (JSONObject) jsonValue;
+        return o.containsKey(key);
+    }
+
+    @Override
     public String getString(String key) {
         if (!(jsonValue instanceof JSONObject))
             throw new UnsupportedOperationException("Not an object: " + jsonValue);
@@ -241,14 +251,33 @@ public class Jsonb extends PGobject implements Serializable, Cloneable {
         return getString(o.get(key));
     }
 
-    public int getInt(String key) {
+    @Override
+    public String getString(String key, String defaultValue) {
+        String v = getString(key);
+        return v == null ? defaultValue : v;
+    }
+
+    private Object getIntObject(String key) {
         if (!(jsonValue instanceof JSONObject))
             throw new UnsupportedOperationException("Not an object: " + jsonValue);
 
         JSONObject o = (JSONObject) jsonValue;
-        return getInt(o.get(key));
+        return o.get(key);
     }
 
+    @Override
+    public int getInt(String key) {
+        return getInt(getIntObject(key));
+    }
+
+    @Override
+    public int getInt(String key, int defaultValue) {
+        JSONObject o = (JSONObject) jsonValue;
+        Object v = o.get(key);
+        return v == null ? defaultValue : getInt(v);
+    }
+
+    @Override
     public long getLong(String key) {
         if (!(jsonValue instanceof JSONObject))
             throw new UnsupportedOperationException("Not an object: " + jsonValue);
@@ -257,6 +286,12 @@ public class Jsonb extends PGobject implements Serializable, Cloneable {
         return getLong(o.get(key));
     }
 
+    @Override
+    public long getLong(String key, long defaultValue) {
+        return containsKey(key) ? getLong(key) : defaultValue;
+    }
+
+    @Override
     public double getDouble(String key) {
         if (!(jsonValue instanceof JSONObject))
             throw new UnsupportedOperationException("Not an object: " + jsonValue);
@@ -265,6 +300,12 @@ public class Jsonb extends PGobject implements Serializable, Cloneable {
         return getDouble(o.get(key));
     }
 
+    @Override
+    public double getDouble(String key, double defaultValue) {
+        return containsKey(key) ? getDouble(key) : defaultValue;
+    }
+
+    @Override
     public boolean getBoolean(String key) {
         if (!(jsonValue instanceof JSONObject))
             throw new UnsupportedOperationException("Not an object: " + jsonValue);
@@ -273,14 +314,12 @@ public class Jsonb extends PGobject implements Serializable, Cloneable {
         return getBoolean(o.get(key));
     }
 
-    public boolean isNull(String key) {
-        if (!(jsonValue instanceof JSONObject))
-            throw new UnsupportedOperationException("Not an object: " + jsonValue);
-
-        JSONObject o = (JSONObject) jsonValue;
-        return o.get(key) == null;
+    @Override
+    public boolean getBoolean(String key, boolean defaultValue) {
+        return containsKey(key) ? getBoolean(key) : defaultValue;
     }
 
+    @Override
     public Jsonb getArray(String key) {
         if (!(jsonValue instanceof JSONObject))
             throw new UnsupportedOperationException("Not an object: " + jsonValue);
@@ -289,12 +328,22 @@ public class Jsonb extends PGobject implements Serializable, Cloneable {
         return getArray(o.get(key));
     }
 
+    @Override
     public Jsonb getObject(String key) {
         if (!(jsonValue instanceof JSONObject))
             throw new UnsupportedOperationException("Not an object: " + jsonValue);
 
         JSONObject o = (JSONObject) jsonValue;
         return getObject(o.get(key));
+    }
+
+    @Override
+    public boolean isNull(String key) {
+        if (!(jsonValue instanceof JSONObject))
+            throw new UnsupportedOperationException("Not an object: " + jsonValue);
+
+        JSONObject o = (JSONObject) jsonValue;
+        return o.get(key) == null;
     }
 
     public int size() {

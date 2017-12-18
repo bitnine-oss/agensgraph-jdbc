@@ -61,6 +61,11 @@ public class JsonbUtilTest extends TestCase {
                         .add("i", 0))
                 .build();
         assertNotNull(j.toString());
+
+        assertTrue(j.containsKey("z"));
+        assertTrue(j.isNull("z"));
+        assertFalse(j.containsKey("x"));
+        assertTrue(j.isNull("x"));
     }
 
     @Test

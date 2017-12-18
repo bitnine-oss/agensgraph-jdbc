@@ -57,6 +57,8 @@ public class VertexTest extends TestCase {
 
         Vertex v = (Vertex) rs.getObject(1);
         assertEquals("v", v.getLabel());
+        assertFalse(v.containsKey("x"));
+        assertTrue(v.containsKey("s"));
         assertEquals("", v.getString("s"));
         assertEquals(0, v.getInt("l"));
         assertEquals(0, v.getLong("l"));
