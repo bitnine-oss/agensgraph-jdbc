@@ -6,7 +6,7 @@
 
   <groupId>net.bitnine</groupId>
   <artifactId>agensgraph-jdbc</artifactId>
-  <version>1.4.0</version>
+  <version>1.4.1</version>
   <packaging>jar</packaging>
 
   <name>Agensgraph JDBC</name>

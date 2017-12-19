@@ -1,3 +1,8 @@
+1.4.1 / 2017-12-19
+------------------
+* `JsonbUtil`, `JsonbArrayBuilder`, and `JsonbObjectBuilder` now support `Iterable` and `Map` for their values.
+* Support `containsKey()` and getters with default value
+
 1.4.0 / 2017-10-14
 ------------------
 * Improve `Vertex`, `Edge`, and `Path` class
