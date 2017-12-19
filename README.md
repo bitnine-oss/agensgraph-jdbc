@@ -17,7 +17,7 @@ You can download the precompiled driver(jar) from [bitnine.net/downloads](http:/
 <dependency>
   <groupId>net.bitnine</groupId>
   <artifactId>agensgraph-jdbc</artifactId>
-  <version>1.4.0</version>
+  <version>1.4.1</version>
 </dependency>
 ```
 You may search the latest version on [The Central Repository with GroupId and ArtifactId](http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22net.bitnine%22%20AND%20a%3A%22agensgraph-jdbc%22)
