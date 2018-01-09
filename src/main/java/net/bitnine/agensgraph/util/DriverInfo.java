@@ -21,10 +21,10 @@ public final class DriverInfo {
     }
 
     public static final String DRIVER_NAME = "AgensGraph JDBC Driver";
-    public static final String DRIVER_VERSION = "1.4.0";
+    public static final String DRIVER_VERSION = "1.4.1";
     public static final String DRIVER_FULL_NAME = DRIVER_NAME + " " + DRIVER_VERSION;
 
     public static final int MAJOR_VERSION = 1;
     public static final int MINOR_VERSION = 4;
-    public static final int PATCH_VERSION = 0;
+    public static final int PATCH_VERSION = 1;
 }
