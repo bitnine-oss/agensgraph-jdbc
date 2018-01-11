@@ -1,3 +1,6 @@
+1.4.2 / 2010-01-11
+* feat: Support `getKeys()` and `getTypedValue()`
+
 1.4.1 / 2017-12-19
 ------------------
 * `JsonbUtil`, `JsonbArrayBuilder`, and `JsonbObjectBuilder` now support `Iterable` and `Map` for their values.
