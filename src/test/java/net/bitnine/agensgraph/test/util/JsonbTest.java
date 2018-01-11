@@ -28,6 +28,8 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.List;
+import java.util.Map;
 
 public class JsonbTest extends TestCase {
     private Connection conn;
@@ -603,7 +605,6 @@ public class JsonbTest extends TestCase {
     @Test
     public void testArrayGet() throws SQLException {
         Statement stmt = conn.createStatement();
-
         ResultSet rs = stmt.executeQuery("RETURN ['', 0, 0.0, false, true, null, [], {}]");
         assertTrue(rs.next());
 
@@ -632,6 +633,9 @@ public class JsonbTest extends TestCase {
 
         Jsonb j = (Jsonb) rs.getObject(1);
         assertEquals(7, j.size());
+        for (String k : j.getKeys())
+            assertTrue("s".equals(k) || "l".equals(k) || "d".equals(k) ||
+                    "f".equals(k) || "t".equals(k) || "a".equals(k) || "o".equals(k));
         assertFalse(j.containsKey("x"));
         assertTrue(j.containsKey("s"));
         assertEquals("", j.getString("s"));
@@ -643,6 +647,32 @@ public class JsonbTest extends TestCase {
         assertTrue(j.isNull("z"));
         assertEquals(Jsonb.class, j.getArray("a").getClass());
         assertEquals(Jsonb.class, j.getObject("o").getClass());
+
+        assertTrue(!rs.next());
+        rs.close();
+        stmt.close();
+    }
+
+    @Test
+    public void testGetTypedValue() throws SQLException {
+        Statement stmt = conn.createStatement();
+        ResultSet rs = stmt.executeQuery("RETURN {s: '', l: 0, d: 0.0, f: false, t: true, z: null, a: ['', 0], o: {s: '', l: 4294967296}}");
+        assertTrue(rs.next());
+
+        Jsonb j = (Jsonb) rs.getObject(1);
+        Map o = (Map) j.getTypedValue();
+        assertEquals("", o.get("s"));
+        assertEquals(0, o.get("l"));
+        assertEquals(0.0, o.get("d"));
+        assertFalse((boolean) o.get("f"));
+        assertTrue((boolean) o.get("t"));
+        assertNull(o.get("z"));
+        List a = (List) o.get("a");
+        assertEquals("", a.get(0));
+        assertEquals(0, a.get(1));
+        Map po = (Map) o.get("o");
+        assertEquals("", po.get("s"));
+        assertEquals(4294967296L, po.get("l"));
 
         assertTrue(!rs.next());
         rs.close();

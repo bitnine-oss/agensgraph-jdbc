@@ -17,6 +17,8 @@
 package net.bitnine.agensgraph.util;
 
 public interface JsonbObject {
+    Iterable<String> getKeys();
+
     boolean containsKey(String key);
 
     String getString(String key);

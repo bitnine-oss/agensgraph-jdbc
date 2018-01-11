@@ -25,6 +25,9 @@ import org.postgresql.util.PSQLState;
 
 import java.io.Serializable;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Jsonb extends PGobject implements JsonbObject, Serializable, Cloneable {
     private Object jsonValue = null;
@@ -72,13 +75,17 @@ public class Jsonb extends PGobject implements JsonbObject, Serializable, Clonea
         throw new UnsupportedOperationException("Not a string: " + obj);
     }
 
+    private boolean isInteger(long l) {
+        return (l >= Integer.MIN_VALUE && l <= Integer.MAX_VALUE);
+    }
+
     private int getInt(Object obj) {
         if (obj instanceof Long) {
             long l = (Long) obj;
-            if (l < Integer.MIN_VALUE || l > Integer.MAX_VALUE)
-                throw new IllegalArgumentException("Bad value for type int: " + l);
+            if (isInteger(l))
+                return (int) l;
 
-            return (int) l;
+            throw new IllegalArgumentException("Bad value for type int: " + l);
         }
 
         throw new UnsupportedOperationException("Not an int: " + obj);
@@ -234,6 +241,18 @@ public class Jsonb extends PGobject implements JsonbObject, Serializable, Clonea
     }
 
     @Override
+    public Iterable<String> getKeys() {
+        if (!(jsonValue instanceof JSONObject))
+            throw new UnsupportedOperationException("Not an object: " + jsonValue);
+
+        JSONObject o = (JSONObject) jsonValue;
+        ArrayList<String> keys = new ArrayList<>(o.size());
+        for (Object k : o.keySet())
+            keys.add((String) k);
+        return keys;
+    }
+
+    @Override
     public boolean containsKey(String key) {
         if (!(jsonValue instanceof JSONObject))
             throw new UnsupportedOperationException("Not an object: " + jsonValue);
@@ -353,6 +372,36 @@ public class Jsonb extends PGobject implements JsonbObject, Serializable, Clonea
             return ((JSONObject) jsonValue).size();
         else
             throw new UnsupportedOperationException("Not an array or an object: " + jsonValue);
+    }
+
+    private Object getTypedValue(Object obj) {
+        if (obj instanceof Long) {
+            long l = (Long) obj;
+            if (isInteger(l))
+                return (int) l;
+            else
+                return l;
+        } else if (obj instanceof JSONArray) {
+            JSONArray a = (JSONArray) obj;
+            ArrayList<Object> newa = new ArrayList<>(a.size());
+            for (Object e : a)
+                newa.add(getTypedValue(e));
+            return newa;
+        } else if (obj instanceof JSONObject) {
+            JSONObject o = (JSONObject) obj;
+            HashMap<String, Object> newo = new HashMap<>(o.size());
+            for (Object _e : o.entrySet()) {
+                Map.Entry e = (Map.Entry) _e;
+                newo.put((String) e.getKey(), getTypedValue(e.getValue()));
+            }
+            return newo;
+        } else {
+            return obj;
+        }
+    }
+
+    public Object getTypedValue() {
+        return getTypedValue(jsonValue);
     }
 
     @Override

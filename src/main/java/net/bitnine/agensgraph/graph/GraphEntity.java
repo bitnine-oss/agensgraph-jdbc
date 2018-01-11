@@ -52,6 +52,11 @@ public abstract class GraphEntity extends PGobject implements JsonbObject, Seria
     }
 
     @Override
+    public Iterable<String> getKeys() {
+        return props.getKeys();
+    }
+
+    @Override
     public boolean containsKey(String key) {
         return props.containsKey(key);
     }
