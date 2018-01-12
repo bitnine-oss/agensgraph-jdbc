@@ -29,19 +29,31 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * This class is for a Jsonb value which is returned from server or will be sent to the server.
+ */
 public class Jsonb extends PGobject implements JsonbObject, Serializable, Cloneable {
     private Object jsonValue = null;
 
+    /**
+     * This constructor should not be used directly.
+     */
     public Jsonb() {
         setType("jsonb");
     }
 
+    /**
+     * This constructor should not be used directly.
+     */
     Jsonb(Object obj) {
         this();
 
         jsonValue = obj;
     }
 
+    /**
+     * This method should not be used directly.
+     */
     @Override
     public void setValue(String value) throws SQLException {
         Object obj;
@@ -56,6 +68,11 @@ public class Jsonb extends PGobject implements JsonbObject, Serializable, Clonea
         this.jsonValue = obj;
     }
 
+    /**
+     * Returns a string representation of the Json value.
+     *
+     * @return a string representation of the Json value
+     */
     @Override
     public String getValue() {
         if (value == null)
@@ -64,6 +81,11 @@ public class Jsonb extends PGobject implements JsonbObject, Serializable, Clonea
         return value;
     }
 
+    /**
+     * Returns the internal structure (from json-simple 1.1.1) of the Json value.
+     *
+     * @return the internal structure (from json-simple 1.1.1) of the Json value
+     */
     public Object getJsonValue() {
         return jsonValue;
     }
@@ -137,6 +159,11 @@ public class Jsonb extends PGobject implements JsonbObject, Serializable, Clonea
         throw new UnsupportedOperationException("Not an object: " + obj);
     }
 
+    /**
+     * Returns the string value if the Json value is string or returns null.
+     *
+     * @return the string value if the Json value is string or returns null
+     */
     public String tryGetString() {
         if (jsonValue instanceof String)
             return (String) jsonValue;
@@ -144,38 +171,90 @@ public class Jsonb extends PGobject implements JsonbObject, Serializable, Clonea
         return null;
     }
 
+    /**
+     * Returns the string value if the Json value is string or throws UnsupportedOperationException.
+     *
+     * @return the string value if the Json value is string or throws UnsupportedOperationException
+     * @throws UnsupportedOperationException not a string
+     */
     public String getString() {
         return getString(jsonValue);
     }
 
+    /**
+     * Returns the integer value if the Json value is integer or throws UnsupportedOperationException.
+     *
+     * @return the integer value if the Json value is integer or throws UnsupportedOperationException
+     * @throws UnsupportedOperationException not an int
+     */
     public int getInt() {
         return getInt(jsonValue);
     }
 
+    /**
+     * Returns the long value if the Json value is long or throws UnsupportedOperationException.
+     *
+     * @return the long value if the Json value is long or throws UnsupportedOperationException
+     * @throws UnsupportedOperationException not a long
+     */
     public long getLong() {
         return getLong(jsonValue);
     }
 
+    /**
+     * Returns the double value if the Json value is double or throws UnsupportedOperationException.
+     *
+     * @return the double value if the Json value is double or throws UnsupportedOperationException
+     * @throws UnsupportedOperationException not a double
+     */
     public double getDouble() {
         return getDouble(jsonValue);
     }
 
+    /**
+     * Returns the boolean value if the Json value is boolean.
+     *
+     * @return the boolean value if the Json value is boolean
+     */
     public boolean getBoolean() {
         return getBoolean(jsonValue);
     }
 
+    /**
+     * Returns true if the Json value is null.
+     *
+     * @return true if the Json value is null
+     */
     public boolean isNull() {
         return jsonValue == null;
     }
 
+    /**
+     * Returns a Jsonb that wraps the array value if the Json value is array or throws UnsupportedOperationException.
+     *
+     * @return a Jsonb that wraps the array value if the Json value is array or throws UnsupportedOperationException
+     */
     public Jsonb getArray() {
         return getArray(jsonValue);
     }
 
+    /**
+     * Returns a Jsonb that wraps the object value if the Json value is object or throws UnsupportedOperationException.
+     *
+     * @return a Jsonb that wraps the object value if the Json value is object or throws UnsupportedOperationException
+     * @throws UnsupportedOperationException not an object
+     */
     public Jsonb getObject() {
         return getObject(jsonValue);
     }
 
+    /**
+     * Returns the string value if the value at index of the array is string or throws UnsupportedOperationException.
+     *
+     * @param index the index of the array
+     * @return the string value if the value at index of the array is string or throws UnsupportedOperationException
+     * @throws UnsupportedOperationException not an array
+     */
     public String getString(int index) {
         if (!(jsonValue instanceof JSONArray))
             throw new UnsupportedOperationException("Not an array: " + jsonValue);
@@ -184,6 +263,13 @@ public class Jsonb extends PGobject implements JsonbObject, Serializable, Clonea
         return getString(a.get(index));
     }
 
+    /**
+     * Returns the integer value if the value at index of the array is integer or throws UnsupportedOperationException.
+     *
+     * @param index the index of the array
+     * @return the integer value if the value at index of the array is integer or throws UnsupportedOperationException
+     * @throws UnsupportedOperationException not an array
+     */
     public int getInt(int index) {
         if (!(jsonValue instanceof JSONArray))
             throw new UnsupportedOperationException("Not an array: " + jsonValue);
@@ -192,6 +278,13 @@ public class Jsonb extends PGobject implements JsonbObject, Serializable, Clonea
         return getInt(a.get(index));
     }
 
+    /**
+     * Returns the long value if the value at index of the array is long or throws UnsupportedOperationException.
+     *
+     * @param index the index of the array
+     * @return the long value if the value at index of the array is long or throws UnsupportedOperationException
+     * @throws UnsupportedOperationException not an array
+     */
     public long getLong(int index) {
         if (!(jsonValue instanceof JSONArray))
             throw new UnsupportedOperationException("Not an array: " + jsonValue);
@@ -200,6 +293,13 @@ public class Jsonb extends PGobject implements JsonbObject, Serializable, Clonea
         return getLong(a.get(index));
     }
 
+    /**
+     * Returns the double value if the value at index of the array is double or throws UnsupportedOperationException.
+     *
+     * @param index the index of the array
+     * @return the double value if the value at index of the array is double or throws UnsupportedOperationException
+     * @throws UnsupportedOperationException not an array
+     */
     public double getDouble(int index) {
         if (!(jsonValue instanceof JSONArray))
             throw new UnsupportedOperationException("Not an array: " + jsonValue);
@@ -208,6 +308,13 @@ public class Jsonb extends PGobject implements JsonbObject, Serializable, Clonea
         return getDouble(a.get(index));
     }
 
+    /**
+     * Returns the boolean value if the value at index of the array is boolean or throws UnsupportedOperationException.
+     *
+     * @param index the index of the array
+     * @return the boolean value if the value at index of the array is boolean or throws UnsupportedOperationException
+     * @throws UnsupportedOperationException not an array
+     */
     public boolean getBoolean(int index) {
         if (!(jsonValue instanceof JSONArray))
             throw new UnsupportedOperationException("Not an array: " + jsonValue);
@@ -216,6 +323,15 @@ public class Jsonb extends PGobject implements JsonbObject, Serializable, Clonea
         return getBoolean(a.get(index));
     }
 
+    /**
+     * Returns a Jsonb that wraps the array value if the value at index of the array is array
+     * or throws UnsupportedOperationException.
+     *
+     * @param index the index of the array
+     * @return a Jsonb that wraps the array value if the value at index of the array is array
+     * or throws UnsupportedOperationException
+     * @throws UnsupportedOperationException not an array
+     */
     public Jsonb getArray(int index) {
         if (!(jsonValue instanceof JSONArray))
             throw new UnsupportedOperationException("Not an array: " + jsonValue);
@@ -224,6 +340,15 @@ public class Jsonb extends PGobject implements JsonbObject, Serializable, Clonea
         return getArray(a.get(index));
     }
 
+    /**
+     * Returns a Jsonb that wraps the object value if the value at index of the array is object
+     * or throws UnsupportedOperationException.
+     *
+     * @param index the index of the array
+     * @return a Jsonb that wraps the object value if the value at index of the array is object
+     * or throws UnsupportedOperationException
+     * @throws UnsupportedOperationException not an array
+     */
     public Jsonb getObject(int index) {
         if (!(jsonValue instanceof JSONArray))
             throw new UnsupportedOperationException("Not an array: " + jsonValue);
@@ -232,6 +357,13 @@ public class Jsonb extends PGobject implements JsonbObject, Serializable, Clonea
         return getObject(a.get(index));
     }
 
+    /**
+     * Returns true if the value at index of the array is null or throws UnsupportedOperationException.
+     *
+     * @param index the index of the array
+     * @return true if the value at index of the array is null or throws UnsupportedOperationException
+     * @throws UnsupportedOperationException not an array
+     */
     public boolean isNull(int index) {
         if (!(jsonValue instanceof JSONArray))
             throw new UnsupportedOperationException("Not an array: " + jsonValue);
@@ -362,6 +494,11 @@ public class Jsonb extends PGobject implements JsonbObject, Serializable, Clonea
         return o.get(key) == null;
     }
 
+    /**
+     * Returns the size of Json value if the value is array or object.
+     *
+     * @return the size of Json value if the value is array or object
+     */
     public int size() {
         if (jsonValue instanceof JSONArray)
             return ((JSONArray) jsonValue).size();
@@ -397,6 +534,11 @@ public class Jsonb extends PGobject implements JsonbObject, Serializable, Clonea
         }
     }
 
+    /**
+     * Returns an object that wraps automatically the value by type.
+     *
+     * @return an object that wraps automatically the value by type
+     */
     public Object getTypedValue() {
         return getTypedValue(jsonValue);
     }

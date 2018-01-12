@@ -16,15 +16,40 @@
 
 package net.bitnine.agensgraph.util;
 
+/**
+ * The Driver info.
+ */
 public final class DriverInfo {
     private DriverInfo() {
     }
 
+    /**
+     * The driver name.
+     */
     public static final String DRIVER_NAME = "AgensGraph JDBC Driver";
+
+    /**
+     * The driver version.
+     */
     public static final String DRIVER_VERSION = "1.4.2";
+
+    /**
+     * The driver full name.
+     */
     public static final String DRIVER_FULL_NAME = DRIVER_NAME + " " + DRIVER_VERSION;
 
+    /**
+     * The major version.
+     */
     public static final int MAJOR_VERSION = 1;
+
+    /**
+     * The minor version.
+     */
     public static final int MINOR_VERSION = 4;
+
+    /**
+     * The patch version.
+     */
     public static final int PATCH_VERSION = 2;
 }

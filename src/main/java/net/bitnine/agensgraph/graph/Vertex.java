@@ -25,6 +25,9 @@ import java.sql.SQLException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * This class defines the type vertex.
+ */
 public class Vertex extends GraphEntity {
     private static final Pattern vertexPattern;
 
@@ -58,6 +61,11 @@ public class Vertex extends GraphEntity {
         super.setValue(value);
     }
 
+    /**
+     * Returns id of the vertex.
+     *
+     * @return id of the vertex
+     */
     public GraphId getVertexId() {
         return getGraphId();
     }

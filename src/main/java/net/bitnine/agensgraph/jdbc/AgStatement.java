@@ -31,6 +31,9 @@ import java.sql.SQLWarning;
 import java.sql.Statement;
 import java.util.List;
 
+/**
+ * This class defines a statement to AgensGraph.
+ */
 public class AgStatement implements BaseStatement {
     private final PgStatement stmt;
 
