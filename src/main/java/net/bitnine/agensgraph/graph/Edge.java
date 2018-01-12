@@ -25,6 +25,9 @@ import java.sql.SQLException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * This class defines the type edge.
+ */
 public class Edge extends GraphEntity {
     private static final Pattern edgePattern;
 
@@ -69,14 +72,29 @@ public class Edge extends GraphEntity {
         super.setValue(value);
     }
 
+    /**
+     * Returns id of the edge.
+     *
+     * @return id of the edge
+     */
     public GraphId getEdgeId() {
         return getGraphId();
     }
 
+    /**
+     * Returns id of the start vertex.
+     *
+     * @return id of the start vertex
+     */
     public GraphId getStartVertexId() {
         return start;
     }
 
+    /**
+     * Returns id of the end vertex.
+     *
+     * @return id of the end vertex
+     */
     public GraphId getEndVertexId() {
         return end;
     }

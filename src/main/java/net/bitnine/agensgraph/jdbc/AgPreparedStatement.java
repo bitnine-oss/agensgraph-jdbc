@@ -40,6 +40,9 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
 
+/**
+ * This class defines a precompiled statement to AgensGraph.
+ */
 public class AgPreparedStatement extends AgStatement implements PreparedStatement {
     private final PreparedStatement pstmt;
     private final ArrayList<String> params;
@@ -360,6 +363,13 @@ public class AgPreparedStatement extends AgStatement implements PreparedStatemen
         return iface.isAssignableFrom(pstmt.getClass());
     }
 
+    /**
+     * Sets a value of a named parameter to null.
+     *
+     * @param parameterName the given parameter name
+     * @param sqlType       the SQL type
+     * @throws SQLException the SQL exception
+     */
     public void setNull(String parameterName, int sqlType) throws SQLException {
         int parameterIndex = 1;
         for (String param : params) {
@@ -370,6 +380,13 @@ public class AgPreparedStatement extends AgStatement implements PreparedStatemen
         }
     }
 
+    /**
+     * Sets a value of a named parameter to boolean.
+     *
+     * @param parameterName the given parameter name
+     * @param x             the parameter value
+     * @throws SQLException the SQL exception
+     */
     public void setBoolean(String parameterName, boolean x) throws SQLException {
         int parameterIndex = 1;
         for (String param : params) {
@@ -380,6 +397,13 @@ public class AgPreparedStatement extends AgStatement implements PreparedStatemen
         }
     }
 
+    /**
+     * Sets a value of a named parameter to short.
+     *
+     * @param parameterName the given parameter name
+     * @param x             the parameter value
+     * @throws SQLException the SQL exception
+     */
     public void setShort(String parameterName, short x) throws SQLException {
         int parameterIndex = 1;
         for (String param : params) {
@@ -390,6 +414,13 @@ public class AgPreparedStatement extends AgStatement implements PreparedStatemen
         }
     }
 
+    /**
+     * Sets a value of a named parameter to integer.
+     *
+     * @param parameterName the given parameter name
+     * @param x             the parameter value
+     * @throws SQLException the SQL exception
+     */
     public void setInt(String parameterName, int x) throws SQLException {
         int parameterIndex = 1;
         for (String param : params) {
@@ -400,6 +431,13 @@ public class AgPreparedStatement extends AgStatement implements PreparedStatemen
         }
     }
 
+    /**
+     * Sets a value of a named parameter to long.
+     *
+     * @param parameterName the given parameter name
+     * @param x             the parameter value
+     * @throws SQLException the SQL exception
+     */
     public void setLong(String parameterName, long x) throws SQLException {
         int parameterIndex = 1;
         for (String param : params) {
@@ -410,6 +448,13 @@ public class AgPreparedStatement extends AgStatement implements PreparedStatemen
         }
     }
 
+    /**
+     * Sets a value of a named parameter to float.
+     *
+     * @param parameterName the given parameter name
+     * @param x             the parameter value
+     * @throws SQLException the SQL exception
+     */
     public void setFloat(String parameterName, float x) throws SQLException {
         int parameterIndex = 1;
         for (String param : params) {
@@ -420,6 +465,13 @@ public class AgPreparedStatement extends AgStatement implements PreparedStatemen
         }
     }
 
+    /**
+     * Sets a value of a named parameter to double.
+     *
+     * @param parameterName the given parameter name
+     * @param x             the parameter value
+     * @throws SQLException the SQL exception
+     */
     public void setDouble(String parameterName, double x) throws SQLException {
         int parameterIndex = 1;
         for (String param : params) {
@@ -430,6 +482,13 @@ public class AgPreparedStatement extends AgStatement implements PreparedStatemen
         }
     }
 
+    /**
+     * Sets a value of a named parameter to big decimal.
+     *
+     * @param parameterName the given parameter name
+     * @param x             the parameter value
+     * @throws SQLException the SQL exception
+     */
     public void setBigDecimal(String parameterName, BigDecimal x) throws SQLException {
         int parameterIndex = 1;
         for (String param : params) {
@@ -440,6 +499,13 @@ public class AgPreparedStatement extends AgStatement implements PreparedStatemen
         }
     }
 
+    /**
+     * Sets a value of a named parameter to string.
+     *
+     * @param parameterName the given parameter name
+     * @param x             the parameter value
+     * @throws SQLException the SQL exception
+     */
     public void setString(String parameterName, String x) throws SQLException {
         int parameterIndex = 1;
         for (String param : params) {
@@ -450,6 +516,13 @@ public class AgPreparedStatement extends AgStatement implements PreparedStatemen
         }
     }
 
+    /**
+     * Sets a value of a named parameter to object.
+     *
+     * @param parameterName the parameter name
+     * @param x             the parameter value
+     * @throws SQLException the SQL exception
+     */
     public void setObject(String parameterName, Object x) throws SQLException {
         int parameterIndex = 1;
         for (String param : params) {

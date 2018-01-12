@@ -23,6 +23,9 @@ import org.postgresql.util.PSQLState;
 import java.io.Serializable;
 import java.sql.SQLException;
 
+/**
+ * This class defines the type graph id.
+ */
 public class GraphId extends PGobject implements Serializable, Cloneable {
     private long id;
 
@@ -54,6 +57,11 @@ public class GraphId extends PGobject implements Serializable, Cloneable {
         this.id = (labid << (32 + 16)) | locid;
     }
 
+    /**
+     * Returns the id of the GraphId.
+     *
+     * @return the id of the GraphId
+     */
     public long getId() {
         return id;
     }

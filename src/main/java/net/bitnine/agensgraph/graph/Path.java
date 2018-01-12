@@ -24,6 +24,9 @@ import java.io.Serializable;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
+/**
+ * This class defines the type path.
+ */
 public class Path extends PGobject implements Serializable, Cloneable {
     private ArrayList<Vertex> vertices;
     private ArrayList<Edge> edges;
@@ -127,14 +130,29 @@ public class Path extends PGobject implements Serializable, Cloneable {
         return tokens;
     }
 
+    /**
+     * Returns a set of the vertices.
+     *
+     * @return a set of the vertices.
+     */
     public Iterable<Vertex> vertices() {
         return vertices;
     }
 
+    /**
+     * Returns a set of the edges.
+     *
+     * @return a set of the edges.
+     */
     public Iterable<Edge> edges() {
         return edges;
     }
 
+    /**
+     * Returns the length of the edges.
+     *
+     * @return the length of the edges
+     */
     public int length() {
         return edges.size();
     }
