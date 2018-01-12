@@ -272,8 +272,7 @@ public class Jsonb extends PGobject implements JsonbObject, Serializable, Clonea
 
     @Override
     public String getString(String key, String defaultValue) {
-        String v = getString(key);
-        return v == null ? defaultValue : v;
+        return containsKey(key) ? getString(key) : defaultValue;
     }
 
     private Object getIntObject(String key) {
@@ -291,9 +290,7 @@ public class Jsonb extends PGobject implements JsonbObject, Serializable, Clonea
 
     @Override
     public int getInt(String key, int defaultValue) {
-        JSONObject o = (JSONObject) jsonValue;
-        Object v = o.get(key);
-        return v == null ? defaultValue : getInt(v);
+        return containsKey(key) ? getInt(key) : defaultValue;
     }
 
     @Override

@@ -632,10 +632,13 @@ public class JsonbTest extends TestCase {
         assertTrue(rs.next());
 
         Jsonb j = (Jsonb) rs.getObject(1);
+
         assertEquals(7, j.size());
+
         for (String k : j.getKeys())
             assertTrue("s".equals(k) || "l".equals(k) || "d".equals(k) ||
                     "f".equals(k) || "t".equals(k) || "a".equals(k) || "o".equals(k));
+
         assertFalse(j.containsKey("x"));
         assertTrue(j.containsKey("s"));
         assertEquals("", j.getString("s"));
@@ -647,6 +650,12 @@ public class JsonbTest extends TestCase {
         assertTrue(j.isNull("z"));
         assertEquals(Jsonb.class, j.getArray("a").getClass());
         assertEquals(Jsonb.class, j.getObject("o").getClass());
+
+        assertEquals("", j.getString("x", ""));
+        assertEquals(0, j.getInt("x", 0));
+        assertEquals(0L, j.getLong("x", 0L));
+        assertEquals(0.0, j.getDouble("x", 0.0));
+        assertEquals(false, j.getBoolean("x", false));
 
         assertTrue(!rs.next());
         rs.close();
