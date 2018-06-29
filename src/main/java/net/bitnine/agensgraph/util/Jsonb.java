@@ -110,19 +110,61 @@ public class Jsonb extends PGobject implements JsonbObject, Serializable, Clonea
             throw new IllegalArgumentException("Bad value for type int: " + l);
         }
 
+        if (obj instanceof String) {
+            String s = getString(obj);
+            s = s.trim();
+
+            if (isLong(s))
+                return getInt(Long.parseLong(s));
+        }
+
         throw new UnsupportedOperationException("Not an int: " + obj);
+    }
+
+    private boolean isLong(String s) {
+        try {
+            Long.parseLong(s);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
     }
 
     private long getLong(Object obj) {
         if (obj instanceof Long)
             return (Long) obj;
 
+        if (obj instanceof String) {
+            String s = getString(obj);
+            s = s.trim();
+
+            if (isLong(s))
+                return getLong(Long.parseLong(s));
+        }
+
         throw new UnsupportedOperationException("Not a long: " + obj);
+    }
+
+    private boolean isDouble(String s) {
+        try {
+            Double.parseDouble(s);
+            return true;
+        } catch(NumberFormatException e) {
+            return false;
+        }
     }
 
     private double getDouble(Object obj) {
         if (obj instanceof Double)
             return (Double) obj;
+
+        if (obj instanceof String) {
+            String s = getString(obj);
+            s = s.trim();
+
+            if (isDouble(s))
+                return getDouble(Double.parseDouble(s));
+        }
 
         throw new UnsupportedOperationException("Not a double: " + obj);
     }
