@@ -366,4 +366,186 @@ public class AgResultSetTest extends TestCase {
         rs.close();
         stmt.close();
     }
+
+    @Test
+    public void testGetStringToShort() throws SQLException {
+        Statement stmt = conn.createStatement();
+        ResultSet rs = stmt.executeQuery("RETURN ' 0' AS s");
+        assertTrue(rs.next());
+        assertEquals(0, rs.getShort(1));
+        assertTrue(!rs.next());
+
+        rs = stmt.executeQuery("RETURN '" + Short.MAX_VALUE + "' AS s");
+        assertTrue(rs.next());
+        assertEquals(Short.MAX_VALUE, rs.getShort(1));
+        assertTrue(!rs.next());
+
+        rs = stmt.executeQuery("RETURN '0x' AS s");
+        assertTrue(rs.next());
+        try {
+            rs.getShort(1);
+            fail("SQLExecption expected");
+        } catch (SQLException e) {
+            assertEquals(PSQLState.NUMERIC_VALUE_OUT_OF_RANGE.getState(), e.getSQLState());
+        }
+        assertTrue(!rs.next());
+
+        rs = stmt.executeQuery("RETURN "+  Short.toString(Short.MAX_VALUE) + " AS s");
+        assertTrue(rs.next());
+        assertEquals(Short.MAX_VALUE, rs.getShort(1));
+        assertTrue(!rs.next());
+
+        rs.close();
+        stmt.close();
+    }
+
+    @Test
+    public void testGetStringToInt() throws SQLException {
+        Statement stmt = conn.createStatement();
+        ResultSet rs = stmt.executeQuery("RETURN ' 0' AS i");
+        assertTrue(rs.next());
+        assertEquals(0, rs.getInt(1));
+        assertTrue(!rs.next());
+
+        rs = stmt.executeQuery("RETURN '" + Integer.MAX_VALUE + "' AS i");
+        assertTrue(rs.next());
+        assertEquals(Integer.MAX_VALUE, rs.getLong(1));
+        assertTrue(!rs.next());
+
+        rs = stmt.executeQuery("RETURN '0x' AS i");
+        assertTrue(rs.next());
+        try {
+            rs.getInt(1);
+            fail("SQLExecption expected");
+        } catch (SQLException e) {
+            assertEquals(PSQLState.NUMERIC_VALUE_OUT_OF_RANGE.getState(), e.getSQLState());
+        }
+        assertTrue(!rs.next());
+
+        rs = stmt.executeQuery("RETURN "+  Integer.toString(Integer.MAX_VALUE) + " AS i");
+        assertTrue(rs.next());
+        assertEquals(Integer.MAX_VALUE, rs.getInt(1));
+        assertTrue(!rs.next());
+
+        rs.close();
+        stmt.close();
+    }
+
+    @Test
+    public void testGetStringToLong() throws SQLException {
+        Statement stmt = conn.createStatement();
+        ResultSet rs = stmt.executeQuery("RETURN ' 0' AS l");
+        assertTrue(rs.next());
+        assertEquals(0, rs.getLong(1));
+        assertTrue(!rs.next());
+
+        rs = stmt.executeQuery("RETURN '" + Long.MAX_VALUE + "' AS l");
+        assertTrue(rs.next());
+        assertEquals(Long.MAX_VALUE, rs.getLong(1));
+        assertTrue(!rs.next());
+
+        rs = stmt.executeQuery("RETURN '0x' AS l");
+        assertTrue(rs.next());
+        try {
+            rs.getLong(1);
+            fail("SQLExecption expected");
+        } catch (SQLException e) {
+            assertEquals(PSQLState.NUMERIC_VALUE_OUT_OF_RANGE.getState(), e.getSQLState());
+        }
+        assertTrue(!rs.next());
+
+        rs = stmt.executeQuery("RETURN "+  Long.toString(Long.MAX_VALUE) + " AS l");
+        assertTrue(rs.next());
+        assertEquals(Long.MAX_VALUE, rs.getLong(1));
+        assertTrue(!rs.next());
+
+        rs.close();
+        stmt.close();
+    }
+
+    @Test
+    public void testGetStringToFloat() throws SQLException {
+        Statement stmt = conn.createStatement();
+        ResultSet rs = stmt.executeQuery("RETURN ' 0.0' AS f");
+        assertTrue(rs.next());
+        assertEquals(0.0F, rs.getFloat(1));
+        assertTrue(!rs.next());
+
+        rs = stmt.executeQuery("RETURN '" + Float.MAX_VALUE + "' AS f");
+        assertTrue(rs.next());
+        assertEquals(Float.MAX_VALUE, rs.getFloat(1));
+        assertTrue(!rs.next());
+
+        rs = stmt.executeQuery("RETURN '0.0x' AS d");
+        assertTrue(rs.next());
+        try {
+            rs.getFloat(1);
+            fail("SQLExecption expected");
+        } catch (SQLException e) {
+            assertEquals(PSQLState.NUMERIC_VALUE_OUT_OF_RANGE.getState(), e.getSQLState());
+        }
+        assertTrue(!rs.next());
+
+        rs = stmt.executeQuery("RETURN "+  Float.toString(Float.MAX_VALUE) + " AS f");
+        assertTrue(rs.next());
+        assertEquals(Float.MAX_VALUE, rs.getFloat(1));
+        assertTrue(!rs.next());
+
+        rs.close();
+        stmt.close();
+    }
+
+    @Test
+    public void testGetStringToDouble() throws SQLException {
+        Statement stmt = conn.createStatement();
+        ResultSet rs = stmt.executeQuery("RETURN ' 0.0' AS d");
+        assertTrue(rs.next());
+        assertEquals(0.0D, rs.getDouble(1));
+        assertTrue(!rs.next());
+
+        rs = stmt.executeQuery("RETURN '0.0x' AS d");
+        assertTrue(rs.next());
+        try {
+            rs.getDouble(1);
+            fail("SQLExecption expected");
+        } catch (SQLException e) {
+            assertEquals(PSQLState.NUMERIC_VALUE_OUT_OF_RANGE.getState(), e.getSQLState());
+        }
+        assertTrue(!rs.next());
+
+        rs = stmt.executeQuery("RETURN "+  Double.toString(Double.MAX_VALUE) + " AS d");
+        assertTrue(rs.next());
+        assertEquals(Double.MAX_VALUE, rs.getDouble(1));
+        assertTrue(!rs.next());
+
+        rs.close();
+        stmt.close();
+    }
+
+    @Test
+    public void testGetStringToBigDecimal() throws SQLException {
+        Statement stmt = conn.createStatement();
+        ResultSet rs = stmt.executeQuery("RETURN ' 0.0' AS b");
+        assertTrue(rs.next());
+        assertEquals(0.0, rs.getBigDecimal(1).doubleValue());
+        assertTrue(!rs.next());
+
+        rs = stmt.executeQuery("RETURN '0.0x' AS b");
+        assertTrue(rs.next());
+        try {
+            rs.getBigDecimal(1);
+            fail("SQLExecption expected");
+        } catch (SQLException e) {
+            assertEquals(PSQLState.NUMERIC_VALUE_OUT_OF_RANGE.getState(), e.getSQLState());
+        }
+        assertTrue(!rs.next());
+
+        rs = stmt.executeQuery("RETURN "+  Double.toString(Double.MAX_VALUE) + " AS d");
+        assertTrue(rs.next());
+        assertEquals(Double.MAX_VALUE, rs.getBigDecimal(1).doubleValue());
+        assertTrue(!rs.next());
+
+        rs.close();
+        stmt.close();
+    }
 }

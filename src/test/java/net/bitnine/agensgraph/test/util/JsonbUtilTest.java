@@ -159,4 +159,16 @@ public class JsonbUtilTest extends TestCase {
         assertEquals(3, j.size());
         assertEquals("{\"a\":[],\"i\":0,\"o\":{}}", j.toString());
     }
+
+    @Test
+    public void testConvertStringToNumber() {
+        Jsonb j = JsonbUtil.create(Integer.toString(Integer.MAX_VALUE) + " ");
+        assertEquals(Integer.MAX_VALUE, j.getInt());
+
+        j = JsonbUtil.create(Long.toString(Long.MAX_VALUE) + " ");
+        assertEquals(Long.MAX_VALUE, j.getLong());
+
+        j = JsonbUtil.create(Double.toString(Double.MAX_VALUE) + " ");
+        assertEquals(Double.MAX_VALUE, j.getDouble());
+    }
 }
