@@ -119,27 +119,77 @@ public class AgResultSet implements ResultSet {
 
     @Override
     public short getShort(int columnIndex) throws SQLException {
-        return rs.getShort(columnIndex);
+        try {
+            return rs.getShort(columnIndex);
+        } catch (PSQLException e) {
+            String s = null;
+            try {
+                s = this.getString(columnIndex);
+                return rs.toShort(s);
+            } catch (PSQLException e1) {
+                throw new PSQLException(GT.tr("Bad value for type {0} : {1}", new Object[]{"short", s}), PSQLState.NUMERIC_VALUE_OUT_OF_RANGE);
+            }
+        }
     }
 
     @Override
     public int getInt(int columnIndex) throws SQLException {
-        return rs.getInt(columnIndex);
+        try {
+            return rs.getInt(columnIndex);
+        } catch (PSQLException e) {
+            String s = null;
+            try {
+                s = this.getString(columnIndex);
+                return rs.toInt(s);
+            } catch (PSQLException e1) {
+                throw new PSQLException(GT.tr("Bad value for type {0} : {1}", new Object[]{"int", s}), PSQLState.NUMERIC_VALUE_OUT_OF_RANGE);
+            }
+        }
     }
 
     @Override
     public long getLong(int columnIndex) throws SQLException {
-        return rs.getLong(columnIndex);
+        try {
+            return rs.getLong(columnIndex);
+        } catch (PSQLException e) {
+            String s = null;
+            try {
+                s = this.getString(columnIndex);
+                return rs.toLong(s);
+            } catch (PSQLException e1) {
+                throw new PSQLException(GT.tr("Bad value for type {0} : {1}", new Object[]{"long", s}), PSQLState.NUMERIC_VALUE_OUT_OF_RANGE);
+            }
+        }
     }
 
     @Override
     public float getFloat(int columnIndex) throws SQLException {
-        return rs.getFloat(columnIndex);
+        try {
+            return rs.getFloat(columnIndex);
+        } catch (PSQLException e) {
+            String s = null;
+            try {
+                s = this.getString(columnIndex);
+                return rs.toFloat(s);
+            } catch (PSQLException e1) {
+                throw new PSQLException(GT.tr("Bad value for type {0} : {1}", new Object[]{"float", s}), PSQLState.NUMERIC_VALUE_OUT_OF_RANGE);
+            }
+        }
     }
 
     @Override
     public double getDouble(int columnIndex) throws SQLException {
-        return rs.getDouble(columnIndex);
+        try {
+            return rs.getDouble(columnIndex);
+        } catch (PSQLException e) {
+            String s = null;
+            try {
+                s = this.getString(columnIndex);
+                return rs.toDouble(s);
+            } catch (PSQLException e1) {
+                throw new PSQLException(GT.tr("Bad value for type {0} : {1}", new Object[]{"double", s}), PSQLState.NUMERIC_VALUE_OUT_OF_RANGE);
+            }
+        }
     }
 
     @Override
@@ -309,7 +359,17 @@ public class AgResultSet implements ResultSet {
 
     @Override
     public BigDecimal getBigDecimal(int columnIndex) throws SQLException {
-        return rs.getBigDecimal(columnIndex);
+        try {
+            return rs.getBigDecimal(columnIndex);
+        } catch (PSQLException e) {
+            String s = null;
+            try {
+                s = this.getString(columnIndex);
+                return rs.toBigDecimal(s);
+            } catch (PSQLException e1) {
+                throw new PSQLException(GT.tr("Bad value for type {0} : {1}", new Object[]{"BigDecimal", s}), PSQLState.NUMERIC_VALUE_OUT_OF_RANGE);
+            }
+        }
     }
 
     @Override
