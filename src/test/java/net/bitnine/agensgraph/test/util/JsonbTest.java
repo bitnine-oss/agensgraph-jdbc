@@ -65,7 +65,7 @@ public class JsonbTest extends TestCase {
     @Test
     public void testGetJsonValueLong() throws SQLException {
         Statement stmt = conn.createStatement();
-        AgResultSet rs = stmt.executeQuery("RETURN " + Long.MAX_VALUE).unwrap(AgResultSet.class);
+        AgResultSet rs = stmt.executeQuery("RETURN to_jsonb(" + Long.MAX_VALUE + ")").unwrap(AgResultSet.class);
         assertTrue(rs.next());
 
         Jsonb j = (Jsonb) rs.getObject(1);
@@ -82,7 +82,7 @@ public class JsonbTest extends TestCase {
     @Test
     public void testGetJsonValueDouble() throws SQLException {
         Statement stmt = conn.createStatement();
-        ResultSet rs = stmt.executeQuery("RETURN " + Math.PI);
+        ResultSet rs = stmt.executeQuery("RETURN to_jsonb(" + Math.PI + ")");
         assertTrue(rs.next());
 
         Jsonb j = (Jsonb) rs.getObject(1);
@@ -230,7 +230,7 @@ public class JsonbTest extends TestCase {
 
         // other types
 
-        rs = stmt.executeQuery("RETURN 0, 0.0, [], {}");
+        rs = stmt.executeQuery("RETURN to_jsonb(0), to_jsonb(0.0), [], {}");
         assertTrue(rs.next());
 
         for (int i = 1; i <= 4; i++) {
@@ -254,7 +254,7 @@ public class JsonbTest extends TestCase {
 
         // int
 
-        ResultSet rs = stmt.executeQuery("RETURN " + Integer.MAX_VALUE);
+        ResultSet rs = stmt.executeQuery("RETURN to_jsonb(" + Integer.MAX_VALUE + ")");
         assertTrue(rs.next());
 
         Jsonb j = (Jsonb) rs.getObject(1);
@@ -265,7 +265,7 @@ public class JsonbTest extends TestCase {
 
         // int - out of range
 
-        rs = stmt.executeQuery("RETURN " + Long.MAX_VALUE);
+        rs = stmt.executeQuery("RETURN to_jsonb(" + Long.MAX_VALUE + ")");
         assertTrue(rs.next());
 
         j = (Jsonb) rs.getObject(1);
@@ -297,7 +297,7 @@ public class JsonbTest extends TestCase {
 
         // other types
 
-        rs = stmt.executeQuery("RETURN '', 0.0, [], {}");
+        rs = stmt.executeQuery("RETURN '', to_jsonb(0.0), [], {}");
         assertTrue(rs.next());
 
         for (int i = 1; i <= 4; i++) {
@@ -321,7 +321,7 @@ public class JsonbTest extends TestCase {
 
         // long
 
-        ResultSet rs = stmt.executeQuery("RETURN " + Long.MAX_VALUE);
+        ResultSet rs = stmt.executeQuery("RETURN to_jsonb(" + Long.MAX_VALUE + ")");
         assertTrue(rs.next());
 
         Jsonb j = (Jsonb) rs.getObject(1);
@@ -349,7 +349,7 @@ public class JsonbTest extends TestCase {
 
         // other types
 
-        rs = stmt.executeQuery("RETURN '', 0.0, [], {}");
+        rs = stmt.executeQuery("RETURN '', to_jsonb(0.0), [], {}");
         assertTrue(rs.next());
 
         for (int i = 1; i <= 4; i++) {
@@ -373,7 +373,7 @@ public class JsonbTest extends TestCase {
 
         // double
 
-        ResultSet rs = stmt.executeQuery("RETURN " + Math.PI);
+        ResultSet rs = stmt.executeQuery("RETURN to_jsonb(" + Math.PI + ")");
         assertTrue(rs.next());
 
         Jsonb j = (Jsonb) rs.getObject(1);
@@ -401,7 +401,7 @@ public class JsonbTest extends TestCase {
 
         // other types
 
-        rs = stmt.executeQuery("RETURN '', 0, [], {}");
+        rs = stmt.executeQuery("RETURN '', to_jsonb(0), [], {}");
         assertTrue(rs.next());
 
         for (int i = 1; i <= 4; i++) {
@@ -449,7 +449,7 @@ public class JsonbTest extends TestCase {
 
         // other types
 
-        rs = stmt.executeQuery("RETURN '', 's', 0, 7, 0.0, 7.7, [], [7], {}, {i: 7}");
+        rs = stmt.executeQuery("RETURN '', 's', to_jsonb(0), to_jsonb(7), to_jsonb(0.0), to_jsonb(7.7), [], [7], {}, {i: 7}");
         assertTrue(rs.next());
 
         j = (Jsonb) rs.getObject(1);
@@ -530,7 +530,7 @@ public class JsonbTest extends TestCase {
 
         // other types
 
-        rs = stmt.executeQuery("RETURN '', 0, 0.0, {}");
+        rs = stmt.executeQuery("RETURN '', to_jsonb(0), to_jsonb(0.0), {}");
         assertTrue(rs.next());
 
         for (int i = 1; i <= 4; i++) {
@@ -585,7 +585,7 @@ public class JsonbTest extends TestCase {
 
         // other types
 
-        rs = stmt.executeQuery("RETURN '', 0, 0.0, []");
+        rs = stmt.executeQuery("RETURN '', to_jsonb(0), to_jsonb(0.0), []");
         assertTrue(rs.next());
 
         for (int i = 1; i <= 4; i++) {
