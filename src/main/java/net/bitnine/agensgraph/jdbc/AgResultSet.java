@@ -19,6 +19,7 @@ package net.bitnine.agensgraph.jdbc;
 
 import net.bitnine.agensgraph.core.Oid;
 import net.bitnine.agensgraph.util.Jsonb;
+import net.bitnine.agensgraph.util.JsonbUtil;
 import org.postgresql.jdbc.PgConnection;
 import org.postgresql.jdbc.PgResultSet;
 import org.postgresql.util.GT;
@@ -101,15 +102,28 @@ public class AgResultSet implements ResultSet {
 
     @Override
     public boolean getBoolean(int columnIndex) throws SQLException {
-        int oid = rs.getColumnOID(columnIndex);
-        if (oid == Oid.JSONB) {
-            Jsonb j = (Jsonb) rs.getObject(columnIndex);
+        try {
+            return rs.getBoolean(columnIndex);
+        } catch (PSQLException e) {
+            // Converting to Jsonb type again
+            Object obj = rs.getObject(columnIndex);
+            Jsonb j = null;
+            if (obj instanceof Jsonb) {
+                j = (Jsonb) obj;
+            } else if (obj instanceof Integer) {
+                j = JsonbUtil.create(((Integer) obj).intValue());
+            } else if (obj instanceof Double) {
+                j = JsonbUtil.create(((Double) obj).doubleValue());
+            } else if (obj instanceof BigDecimal) {
+                j = JsonbUtil.create(((BigDecimal) obj).doubleValue());
+            } else {
+                throw new PSQLException("Cannot cast to boolean", PSQLState.CANNOT_COERCE);
+            }
+
             if (rs.wasNull() || j.isNull())
                 return false;
 
             return j.getBoolean();
-        } else {
-            return rs.getBoolean(columnIndex);
         }
     }
 
