@@ -18,8 +18,10 @@ package net.bitnine.agensgraph.jdbc;
 
 import net.bitnine.agensgraph.core.Oid;
 import net.bitnine.agensgraph.util.Jsonb;
+import org.postgresql.core.Field;
 import org.postgresql.jdbc.PgConnection;
 import org.postgresql.jdbc.PgResultSet;
+import org.postgresql.jdbc.PgResultSetMetaData;
 import org.postgresql.util.GT;
 import org.postgresql.util.PSQLException;
 import org.postgresql.util.PSQLState;
@@ -734,7 +736,26 @@ public class AgResultSet implements ResultSet {
 
     @Override
     public Array getArray(int columnIndex) throws SQLException {
-        return rs.getArray(columnIndex);
+        int oid = rs.getColumnOID(columnIndex);
+        if (oid == Oid.EDGE_ARRAY || oid == Oid.VERTEX_ARRAY || oid == Oid.GRAPHID_ARRAY) {
+            if (isBinary(columnIndex)) {
+                return new AgArray(conn, oid, rs.getBytes(columnIndex));
+            } else {
+                return new AgArray(conn, oid, rs.getString(columnIndex));
+            }
+        } else {
+            return rs.getArray(columnIndex);
+        }
+    }
+
+    /**
+     * Returns true if the value of the given column is in binary format.
+     *
+     * @param column The column to check. Range starts from 1.
+     * @return True if the column is in binary format.
+     */
+    private boolean isBinary(int column) throws SQLException {
+        return ((PgResultSetMetaData) rs.getMetaData()).getFormat(column) == Field.BINARY_FORMAT;
     }
 
     @Override
