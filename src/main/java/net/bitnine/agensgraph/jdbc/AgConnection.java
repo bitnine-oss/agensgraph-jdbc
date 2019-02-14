@@ -16,18 +16,21 @@
 
 package net.bitnine.agensgraph.jdbc;
 
+import net.bitnine.agensgraph.core.Oid;
 import net.bitnine.agensgraph.graph.Edge;
 import net.bitnine.agensgraph.graph.GraphId;
 import net.bitnine.agensgraph.graph.Path;
 import net.bitnine.agensgraph.graph.Vertex;
 import net.bitnine.agensgraph.util.Jsonb;
 import org.postgresql.core.Parser;
+import org.postgresql.jdbc.PgArray;
 import org.postgresql.jdbc.PgConnection;
 import org.postgresql.util.GT;
 import org.postgresql.util.HostSpec;
 import org.postgresql.util.PSQLException;
 import org.postgresql.util.PSQLState;
 
+import java.sql.Array;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -238,5 +241,16 @@ public class AgConnection extends PgConnection {
         params.add(paramName);
 
         return pos - 1;
+    }
+
+    @Override
+    protected Array makeArray(int oid, String fieldString) throws SQLException {
+        if (oid == Oid.EDGE_ARRAY || oid == Oid.VERTEX_ARRAY) {
+            throw new UnsupportedOperationException("Not implemented");
+        } else if (oid == Oid.GRAPHID_ARRAY) {
+            return new AgArray(this, oid, fieldString);
+        }
+
+        return new PgArray(this, oid, fieldString);
     }
 }
