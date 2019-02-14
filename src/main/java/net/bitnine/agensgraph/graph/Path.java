@@ -16,9 +16,8 @@
 
 package net.bitnine.agensgraph.graph;
 
+import net.bitnine.agensgraph.util.AgTokenizer;
 import org.postgresql.util.PGobject;
-import org.postgresql.util.PSQLException;
-import org.postgresql.util.PSQLState;
 
 import java.io.Serializable;
 import java.sql.SQLException;
@@ -37,17 +36,17 @@ public class Path extends PGobject implements Serializable, Cloneable {
 
     @Override
     public void setValue(String value) throws SQLException {
-        ArrayList<String> tokens = tokenize(value);
+        AgTokenizer t = new AgTokenizer(value);
         ArrayList<Vertex> vertices = new ArrayList<>();
         ArrayList<Edge> edges = new ArrayList<>();
-        for (int i = 0; i < tokens.size(); i++) {
+        for (int i = 0; i < t.getSize(); i++) {
             if (i % 2 == 0) {
                 Vertex v = new Vertex();
-                v.setValue(tokens.get(i));
+                v.setValue(t.getToken(i));
                 vertices.add(v);
             } else {
                 Edge e = new Edge();
-                e.setValue(tokens.get(i));
+                e.setValue(t.getToken(i));
                 edges.add(e);
             }
         }
@@ -55,79 +54,6 @@ public class Path extends PGobject implements Serializable, Cloneable {
         this.edges = edges;
 
         super.setValue(value);
-    }
-
-    private ArrayList<String> tokenize(String value) throws SQLException {
-        ArrayList<String> tokens = new ArrayList<>();
-
-        // ignore wrapping '[' and ']' characters
-        int pos = 1;
-        int len = value.length() -1;
-
-        int start = pos;
-        int depth = 0;
-        boolean gid = false;
-
-        while (pos < len) {
-            char c = value.charAt(pos);
-
-            switch (c) {
-                case '"':
-                    if (depth > 0) {
-                        // Parse "string".
-                        // Leave pos unchanged if unmatched right " were found.
-                        boolean escape = false;
-                        for (int i = pos + 1; i < len; i++) {
-                            c = value.charAt(i);
-                            if (c == '\\') {
-                                escape = !escape;
-                            } else if (c == '"') {
-                                if (escape)
-                                    escape = false;
-                                else {
-                                    pos = i;
-                                    break;
-                                }
-                            } else {
-                                escape = false;
-                            }
-                        }
-                    }
-                    break;
-                case '[':
-                    if (depth == 0)
-                        gid = true;
-                    break;
-                case ']':
-                    if (depth == 0)
-                        gid = false;
-                    break;
-                case '{':
-                    depth++;
-                    break;
-                case '}':
-                    depth--;
-                    if (depth < 0) {
-                        throw new PSQLException("Parsing graphpath failed", PSQLState.DATA_ERROR);
-                    }
-                    break;
-                case ',':
-                    if (depth == 0 && !gid) {
-                        tokens.add(value.substring(start, pos));
-                        start = pos + 1;
-                    }
-                    break;
-                default:
-                    break;
-            }
-
-            pos++;
-        }
-
-        /* add the last token */
-        tokens.add(value.substring(start, pos));
-
-        return tokens;
     }
 
     /**
