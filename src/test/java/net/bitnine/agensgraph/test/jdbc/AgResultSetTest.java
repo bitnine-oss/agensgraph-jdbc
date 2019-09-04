@@ -93,7 +93,7 @@ public class AgResultSetTest extends TestCase {
 
         // jsonb boolean
 
-        rs = stmt.executeQuery("SELECT false::jsonb AS f, true::jsonb AS t");
+        rs = stmt.executeQuery("RETURN false::jsonb AS f, true::jsonb AS t");
         assertTrue(rs.next());
 
         assertEquals("false", rs.getString(1));
@@ -130,7 +130,7 @@ public class AgResultSetTest extends TestCase {
 
         // SQL boolean
 
-        ResultSet rs = stmt.executeQuery("SELECT false AS f, true AS t");
+        ResultSet rs = stmt.executeQuery("RETURN false AS f, true AS t");
         assertTrue(rs.next());
 
         assertFalse(rs.getBoolean(1));
@@ -143,7 +143,7 @@ public class AgResultSetTest extends TestCase {
 
         // jsonb boolean
 
-        rs = stmt.executeQuery("SELECT false::jsonb AS f, true::jsonb AS t");
+        rs = stmt.executeQuery("RETURN false::jsonb AS f, true::jsonb AS t");
         assertTrue(rs.next());
 
         assertFalse(rs.getBoolean(1));

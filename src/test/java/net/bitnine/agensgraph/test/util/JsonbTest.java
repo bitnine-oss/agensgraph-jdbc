@@ -98,7 +98,7 @@ public class JsonbTest extends TestCase {
     @Test
     public void testGetJsonValueBoolean() throws SQLException {
         Statement stmt = conn.createStatement();
-        ResultSet rs = stmt.executeQuery("SELECT false::jsonb, true::jsonb");
+        ResultSet rs = stmt.executeQuery("RETURN false::jsonb, true::jsonb");
         assertTrue(rs.next());
 
         Jsonb j1 = (Jsonb) rs.getObject(1);
@@ -210,12 +210,12 @@ public class JsonbTest extends TestCase {
         assertTrue(!rs.next());
         rs.close();
 
-        // jsonb boolean and null
+        // jsonb boolean
 
-        rs = stmt.executeQuery("SELECT false::jsonb, true::jsonb, 'null'::jsonb");
+        rs = stmt.executeQuery("RETURN false::jsonb, true::jsonb");
         assertTrue(rs.next());
 
-        for (int i = 1; i <= 3; i++) {
+        for (int i = 1; i <= 2; i++) {
             j = (Jsonb) rs.getObject(i);
             try {
                 j.getString();
@@ -223,6 +223,30 @@ public class JsonbTest extends TestCase {
             } catch (UnsupportedOperationException ignored) {
             }
         }
+
+        assertTrue(!rs.next());
+        rs.close();
+
+        // jsonb null
+
+        rs = stmt.executeQuery("SELECT 'null'::jsonb");
+        assertTrue(rs.next());
+
+        j = (Jsonb) rs.getObject(1);
+        try {
+            j.getString();
+            fail("SQLException expected");
+        } catch (UnsupportedOperationException ignored){
+        }
+
+        assertTrue(!rs.next());
+        rs.close();
+
+        rs = stmt.executeQuery("RETURN 'null'::jsonb");
+        assertTrue(rs.next());
+
+        j = (Jsonb) rs.getObject(1);
+        assertEquals("null", j.getString());
 
         assertTrue(!rs.next());
         rs.close();
@@ -279,7 +303,7 @@ public class JsonbTest extends TestCase {
 
         // jsonb boolean and null
 
-        rs = stmt.executeQuery("SELECT false::jsonb, true::jsonb, 'null'::jsonb");
+        rs = stmt.executeQuery("RETURN false::jsonb, true::jsonb, 'null'::jsonb");
         assertTrue(rs.next());
 
         for (int i = 1; i <= 3; i++) {
@@ -331,7 +355,7 @@ public class JsonbTest extends TestCase {
 
         // jsonb boolean and null
 
-        rs = stmt.executeQuery("SELECT false::jsonb, true::jsonb, 'null'::jsonb");
+        rs = stmt.executeQuery("RETURN false::jsonb, true::jsonb, 'null'::jsonb");
         assertTrue(rs.next());
 
         for (int i = 1; i <= 3; i++) {
@@ -383,7 +407,7 @@ public class JsonbTest extends TestCase {
 
         // jsonb boolean and null
 
-        rs = stmt.executeQuery("SELECT false::jsonb, true::jsonb, 'null'::jsonb");
+        rs = stmt.executeQuery("RETURN false::jsonb, true::jsonb, 'null'::jsonb");
         assertTrue(rs.next());
 
         for (int i = 1; i <= 3; i++) {
@@ -424,7 +448,7 @@ public class JsonbTest extends TestCase {
 
         // boolean
 
-        ResultSet rs = stmt.executeQuery("SELECT false::jsonb, true::jsonb");
+        ResultSet rs = stmt.executeQuery("RETURN false::jsonb, true::jsonb");
         assertTrue(rs.next());
 
         Jsonb j = (Jsonb) rs.getObject(1);
@@ -512,7 +536,7 @@ public class JsonbTest extends TestCase {
 
         // jsonb boolean and null
 
-        rs = stmt.executeQuery("SELECT false::jsonb, true::jsonb, 'null'::jsonb");
+        rs = stmt.executeQuery("RETURN false::jsonb, true::jsonb, 'null'::jsonb");
         assertTrue(rs.next());
 
         for (int i = 1; i <= 3; i++) {
@@ -567,7 +591,7 @@ public class JsonbTest extends TestCase {
 
         // jsonb boolean and null
 
-        rs = stmt.executeQuery("SELECT false::jsonb, true::jsonb, 'null'::jsonb");
+        rs = stmt.executeQuery("RETURN false::jsonb, true::jsonb, 'null'::jsonb");
         assertTrue(rs.next());
 
         for (int i = 1; i <= 3; i++) {
