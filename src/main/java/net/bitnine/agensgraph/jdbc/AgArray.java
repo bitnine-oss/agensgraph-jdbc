@@ -21,6 +21,7 @@ import net.bitnine.agensgraph.util.AgTokenizer;
 import org.postgresql.core.BaseConnection;
 import org.postgresql.core.BaseStatement;
 import org.postgresql.core.Field;
+import org.postgresql.core.Tuple;
 import org.postgresql.jdbc.PgArray;
 import org.postgresql.util.GT;
 import org.postgresql.util.PSQLException;
@@ -40,7 +41,7 @@ public class AgArray extends PgArray {
     /**
      * The OID of this field.
      */
-    private int oid;
+    private final int oid;
 
     /**
      * Value of field. Will be initialized only once within
@@ -51,8 +52,8 @@ public class AgArray extends PgArray {
     /**
      * Create a new Array.
      *
-     * @param connection a database connection
-     * @param oid the oid of the array datatype
+     * @param connection  a database connection
+     * @param oid         the oid of the array datatype
      * @param fieldString the array data in string form
      * @throws SQLException if something wrong happens
      */
@@ -65,7 +66,7 @@ public class AgArray extends PgArray {
      * Create a new Array.
      *
      * @param connection a database connection
-     * @param oid the oid of the array datatype
+     * @param oid        the oid of the array datatype
      * @param fieldBytes the array data in byte form
      * @throws SQLException if something wrong happens
      */
@@ -135,19 +136,17 @@ public class AgArray extends PgArray {
             count = input.size();
         }
 
-        // array to be returned
-        Object ret = null;
-
         // array elements counter
         int length = 0;
 
         // array elements name
         String typeName = getBaseTypeName();
 
-        Object[] oa = null;
-        ret =
-                oa = (Object[]) java.lang.reflect.Array
-                        .newInstance(connection.getTypeInfo().getPGobject(typeName), count);
+        // array to be returned
+        Object ret;
+        Object[] oa;
+        ret = oa = (Object[]) java.lang.reflect.Array
+                .newInstance(connection.getTypeInfo().getPGobject(typeName), count);
 
         // add elements
         for (; count > 0; count--) {
@@ -200,7 +199,7 @@ public class AgArray extends PgArray {
                     PSQLState.DATA_ERROR);
         }
 
-        List<byte[][]> rows = new ArrayList<byte[][]>();
+        List<Tuple> tuples = new ArrayList<>();
         Field[] fields = new Field[2];
 
         final int baseOid = connection.getTypeInfo().getPGArrayElement(oid);
@@ -213,12 +212,12 @@ public class AgArray extends PgArray {
             String v = arrayList.get(offset);
             t[0] = connection.encodeString(Integer.toString(offset + 1));
             t[1] = v == null ? null : connection.encodeString(v);
-            rows.add(t);
+            tuples.add(new Tuple(t));
         }
 
         BaseStatement stat = (BaseStatement) connection
                 .createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-        return stat.createDriverResultSet(fields, rows);
+        return stat.createDriverResultSet(fields, tuples);
     }
 
     @Override

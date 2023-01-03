@@ -23,13 +23,14 @@ import org.postgresql.ds.PGPoolingDataSource;
 
 import java.util.Properties;
 
+@Deprecated
 public class AGPoolingDataSource extends PGPoolingDataSource {
-    /**
-     * Ensure the driver is loaded as JDBC Driver might be invisible to Java's ServiceLoader.
-     * Usually, {@code Class.forName(...)} is not required as {@link DriverManager} detects JDBC drivers
-     * via {@code META-INF/services/java.sql.Driver} entries. However there might be cases when the driver
-     * is located at the application level classloader, thus it might be required to perform manual
-     * registration of the driver.
+    /*
+      Ensure the driver is loaded as JDBC Driver might be invisible to Java's ServiceLoader.
+      Usually, {@code Class.forName(...)} is not required as {@link DriverManager} detects JDBC drivers
+      via {@code META-INF/services/java.sql.Driver} entries. However there might be cases when the driver
+      is located at the application level classloader, thus it might be required to perform manual
+      registration of the driver.
      */
     static {
         try {
@@ -48,11 +49,16 @@ public class AGPoolingDataSource extends PGPoolingDataSource {
     public void setUrl(String url) {
         Properties p = Driver.parseURL(url, null);
 
+        if (p == null) {
+            throw new IllegalArgumentException("URL invalid " + url);
+        }
         for (PGProperty property : PGProperty.values()) {
             super.setProperty(property, property.get(p));
         }
     }
 
     @Override
-    public AGConnectionPoolDataSource createConnectionPool() { return new AGConnectionPoolDataSource(); }
+    public AGConnectionPoolDataSource createConnectionPool() {
+        return new AGConnectionPoolDataSource();
+    }
 }
