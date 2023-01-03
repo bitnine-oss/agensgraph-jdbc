@@ -16,8 +16,10 @@
 
 package net.bitnine.agensgraph.test.jdbc;
 
-import junit.framework.TestCase;
+import net.bitnine.agensgraph.test.AbstractAGDockerizedTest;
 import net.bitnine.agensgraph.test.TestUtil;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.postgresql.util.PSQLState;
 
@@ -26,16 +28,19 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-public class AgResultSetTest extends TestCase {
-    private Connection conn;
+import static org.junit.Assert.*;
 
-    @Override
-    public void setUp() throws Exception {
+
+public class AgResultSetTest extends AbstractAGDockerizedTest {
+    private static Connection conn;
+
+    @BeforeClass
+    public static void setUp() throws Exception {
         conn = TestUtil.openDB();
     }
 
-    @Override
-    public void tearDown() throws SQLException {
+    @AfterClass
+    public static void tearDown() throws SQLException {
         TestUtil.closeDB(conn);
     }
 
@@ -51,7 +56,7 @@ public class AgResultSetTest extends TestCase {
         assertEquals("Agens\\Graph", rs.getString(1));
         assertEquals("Agens\\Graph", rs.getString("s"));
 
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
         rs.close();
 
         // SQL NULL
@@ -64,7 +69,7 @@ public class AgResultSetTest extends TestCase {
         assertNull(rs.getString("z"));
         assertTrue(rs.wasNull());
 
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
         rs.close();
 
         // jsonb null
@@ -75,7 +80,7 @@ public class AgResultSetTest extends TestCase {
         assertNull(rs.getString(1));
         assertNull(rs.getString("z"));
 
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
         rs.close();
 
         // SQL boolean
@@ -88,12 +93,12 @@ public class AgResultSetTest extends TestCase {
         assertEquals("t", rs.getString(2));
         assertEquals("t", rs.getString("t"));
 
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
         rs.close();
 
         // jsonb boolean
 
-        rs = stmt.executeQuery("SELECT false::jsonb AS f, true::jsonb AS t");
+        rs = stmt.executeQuery("RETURN false::jsonb AS f, true::jsonb AS t");
         assertTrue(rs.next());
 
         assertEquals("false", rs.getString(1));
@@ -101,7 +106,7 @@ public class AgResultSetTest extends TestCase {
         assertEquals("true", rs.getString(2));
         assertEquals("true", rs.getString("t"));
 
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
         rs.close();
 
         // other types
@@ -118,7 +123,7 @@ public class AgResultSetTest extends TestCase {
         assertEquals("{\"k\": \"v\"}", rs.getString(4));
         assertEquals("{\"k\": \"v\"}", rs.getString("o"));
 
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
         rs.close();
 
         stmt.close();
@@ -130,7 +135,7 @@ public class AgResultSetTest extends TestCase {
 
         // SQL boolean
 
-        ResultSet rs = stmt.executeQuery("SELECT false AS f, true AS t");
+        ResultSet rs = stmt.executeQuery("RETURN false AS f, true AS t");
         assertTrue(rs.next());
 
         assertFalse(rs.getBoolean(1));
@@ -138,12 +143,12 @@ public class AgResultSetTest extends TestCase {
         assertTrue(rs.getBoolean(2));
         assertTrue(rs.getBoolean("t"));
 
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
         rs.close();
 
         // jsonb boolean
 
-        rs = stmt.executeQuery("SELECT false::jsonb AS f, true::jsonb AS t");
+        rs = stmt.executeQuery("RETURN false::jsonb AS f, true::jsonb AS t");
         assertTrue(rs.next());
 
         assertFalse(rs.getBoolean(1));
@@ -151,7 +156,7 @@ public class AgResultSetTest extends TestCase {
         assertTrue(rs.getBoolean(2));
         assertTrue(rs.getBoolean("t"));
 
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
         rs.close();
 
         // SQL NULL
@@ -162,7 +167,7 @@ public class AgResultSetTest extends TestCase {
         assertFalse(rs.getBoolean(1));
         assertFalse(rs.getBoolean("z"));
 
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
         rs.close();
 
         // jsonb NULL
@@ -173,7 +178,7 @@ public class AgResultSetTest extends TestCase {
         assertFalse(rs.getBoolean(1));
         assertFalse(rs.getBoolean("z"));
 
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
         rs.close();
 
         // other types
@@ -202,7 +207,7 @@ public class AgResultSetTest extends TestCase {
         assertTrue(rs.getBoolean(10));
         assertTrue(rs.getBoolean("ot"));
 
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
         rs.close();
 
         stmt.close();
@@ -220,7 +225,7 @@ public class AgResultSetTest extends TestCase {
         assertEquals(7, rs.getShort(2));
         assertEquals(7, rs.getShort("d"));
 
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
         rs.close();
 
         // out of range
@@ -241,7 +246,7 @@ public class AgResultSetTest extends TestCase {
             assertEquals(PSQLState.NUMERIC_VALUE_OUT_OF_RANGE.getState(), e.getSQLState());
         }
 
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
         rs.close();
 
         stmt.close();
@@ -259,7 +264,7 @@ public class AgResultSetTest extends TestCase {
         assertEquals(7, rs.getInt(2));
         assertEquals(7, rs.getInt("d"));
 
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
         rs.close();
 
         // out of range
@@ -280,7 +285,7 @@ public class AgResultSetTest extends TestCase {
             assertEquals(PSQLState.NUMERIC_VALUE_OUT_OF_RANGE.getState(), e.getSQLState());
         }
 
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
         rs.close();
 
         stmt.close();
@@ -298,7 +303,7 @@ public class AgResultSetTest extends TestCase {
         assertEquals(7, rs.getLong(2));
         assertEquals(7, rs.getLong("d"));
 
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
         rs.close();
 
         // out of range
@@ -319,7 +324,7 @@ public class AgResultSetTest extends TestCase {
             assertEquals(PSQLState.NUMERIC_VALUE_OUT_OF_RANGE.getState(), e.getSQLState());
         }
 
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
         rs.close();
 
         stmt.close();
@@ -331,10 +336,10 @@ public class AgResultSetTest extends TestCase {
         ResultSet rs = stmt.executeQuery("RETURN " + Float.MAX_VALUE + " AS d");
         assertTrue(rs.next());
 
-        assertEquals(Float.MAX_VALUE, rs.getFloat(1));
-        assertEquals(Float.MAX_VALUE, rs.getFloat("d"));
+        assertEquals(Float.MAX_VALUE, rs.getFloat(1), 0);
+        assertEquals(Float.MAX_VALUE, rs.getFloat("d"), 0);
 
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
         rs.close();
         stmt.close();
     }
@@ -345,10 +350,10 @@ public class AgResultSetTest extends TestCase {
         ResultSet rs = stmt.executeQuery("RETURN " + Double.MAX_VALUE + " AS d");
         assertTrue(rs.next());
 
-        assertEquals(Double.MAX_VALUE, rs.getDouble(1));
-        assertEquals(Double.MAX_VALUE, rs.getDouble("d"));
+        assertEquals(Double.MAX_VALUE, rs.getDouble(1), 0);
+        assertEquals(Double.MAX_VALUE, rs.getDouble("d"), 0);
 
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
         rs.close();
         stmt.close();
     }
@@ -359,10 +364,10 @@ public class AgResultSetTest extends TestCase {
         ResultSet rs = stmt.executeQuery("RETURN " + Double.MAX_VALUE + " AS d");
         assertTrue(rs.next());
 
-        assertEquals(Double.MAX_VALUE, rs.getBigDecimal(1).doubleValue());
-        assertEquals(Double.MAX_VALUE, rs.getBigDecimal("d").doubleValue());
+        assertEquals(Double.MAX_VALUE, rs.getBigDecimal(1).doubleValue(), 0);
+        assertEquals(Double.MAX_VALUE, rs.getBigDecimal("d").doubleValue(), 0);
 
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
         rs.close();
         stmt.close();
     }
@@ -373,12 +378,12 @@ public class AgResultSetTest extends TestCase {
         ResultSet rs = stmt.executeQuery("RETURN ' 0' AS s");
         assertTrue(rs.next());
         assertEquals(0, rs.getShort(1));
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
 
         rs = stmt.executeQuery("RETURN '" + Short.MAX_VALUE + "' AS s");
         assertTrue(rs.next());
         assertEquals(Short.MAX_VALUE, rs.getShort(1));
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
 
         rs = stmt.executeQuery("RETURN '0x' AS s");
         assertTrue(rs.next());
@@ -388,12 +393,12 @@ public class AgResultSetTest extends TestCase {
         } catch (SQLException e) {
             assertEquals(PSQLState.NUMERIC_VALUE_OUT_OF_RANGE.getState(), e.getSQLState());
         }
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
 
-        rs = stmt.executeQuery("RETURN "+  Short.toString(Short.MAX_VALUE) + " AS s");
+        rs = stmt.executeQuery("RETURN " + Short.toString(Short.MAX_VALUE) + " AS s");
         assertTrue(rs.next());
         assertEquals(Short.MAX_VALUE, rs.getShort(1));
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
 
         rs.close();
         stmt.close();
@@ -405,12 +410,12 @@ public class AgResultSetTest extends TestCase {
         ResultSet rs = stmt.executeQuery("RETURN ' 0' AS i");
         assertTrue(rs.next());
         assertEquals(0, rs.getInt(1));
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
 
         rs = stmt.executeQuery("RETURN '" + Integer.MAX_VALUE + "' AS i");
         assertTrue(rs.next());
         assertEquals(Integer.MAX_VALUE, rs.getLong(1));
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
 
         rs = stmt.executeQuery("RETURN '0x' AS i");
         assertTrue(rs.next());
@@ -420,12 +425,12 @@ public class AgResultSetTest extends TestCase {
         } catch (SQLException e) {
             assertEquals(PSQLState.NUMERIC_VALUE_OUT_OF_RANGE.getState(), e.getSQLState());
         }
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
 
-        rs = stmt.executeQuery("RETURN "+  Integer.toString(Integer.MAX_VALUE) + " AS i");
+        rs = stmt.executeQuery("RETURN " + Integer.toString(Integer.MAX_VALUE) + " AS i");
         assertTrue(rs.next());
         assertEquals(Integer.MAX_VALUE, rs.getInt(1));
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
 
         rs.close();
         stmt.close();
@@ -437,12 +442,12 @@ public class AgResultSetTest extends TestCase {
         ResultSet rs = stmt.executeQuery("RETURN ' 0' AS l");
         assertTrue(rs.next());
         assertEquals(0, rs.getLong(1));
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
 
         rs = stmt.executeQuery("RETURN '" + Long.MAX_VALUE + "' AS l");
         assertTrue(rs.next());
         assertEquals(Long.MAX_VALUE, rs.getLong(1));
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
 
         rs = stmt.executeQuery("RETURN '0x' AS l");
         assertTrue(rs.next());
@@ -452,12 +457,12 @@ public class AgResultSetTest extends TestCase {
         } catch (SQLException e) {
             assertEquals(PSQLState.NUMERIC_VALUE_OUT_OF_RANGE.getState(), e.getSQLState());
         }
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
 
-        rs = stmt.executeQuery("RETURN "+  Long.toString(Long.MAX_VALUE) + " AS l");
+        rs = stmt.executeQuery("RETURN " + Long.toString(Long.MAX_VALUE) + " AS l");
         assertTrue(rs.next());
         assertEquals(Long.MAX_VALUE, rs.getLong(1));
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
 
         rs.close();
         stmt.close();
@@ -468,13 +473,13 @@ public class AgResultSetTest extends TestCase {
         Statement stmt = conn.createStatement();
         ResultSet rs = stmt.executeQuery("RETURN ' 0.0' AS f");
         assertTrue(rs.next());
-        assertEquals(0.0F, rs.getFloat(1));
-        assertTrue(!rs.next());
+        assertEquals(0.0F, rs.getFloat(1), 0);
+        assertFalse(rs.next());
 
         rs = stmt.executeQuery("RETURN '" + Float.MAX_VALUE + "' AS f");
         assertTrue(rs.next());
-        assertEquals(Float.MAX_VALUE, rs.getFloat(1));
-        assertTrue(!rs.next());
+        assertEquals(Float.MAX_VALUE, rs.getFloat(1), 0);
+        assertFalse(rs.next());
 
         rs = stmt.executeQuery("RETURN '0.0x' AS d");
         assertTrue(rs.next());
@@ -484,12 +489,12 @@ public class AgResultSetTest extends TestCase {
         } catch (SQLException e) {
             assertEquals(PSQLState.NUMERIC_VALUE_OUT_OF_RANGE.getState(), e.getSQLState());
         }
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
 
-        rs = stmt.executeQuery("RETURN "+  Float.toString(Float.MAX_VALUE) + " AS f");
+        rs = stmt.executeQuery("RETURN " + Float.toString(Float.MAX_VALUE) + " AS f");
         assertTrue(rs.next());
-        assertEquals(Float.MAX_VALUE, rs.getFloat(1));
-        assertTrue(!rs.next());
+        assertEquals(Float.MAX_VALUE, rs.getFloat(1), 0);
+        assertFalse(rs.next());
 
         rs.close();
         stmt.close();
@@ -500,8 +505,8 @@ public class AgResultSetTest extends TestCase {
         Statement stmt = conn.createStatement();
         ResultSet rs = stmt.executeQuery("RETURN ' 0.0' AS d");
         assertTrue(rs.next());
-        assertEquals(0.0D, rs.getDouble(1));
-        assertTrue(!rs.next());
+        assertEquals(0.0D, rs.getDouble(1), 0);
+        assertFalse(rs.next());
 
         rs = stmt.executeQuery("RETURN '0.0x' AS d");
         assertTrue(rs.next());
@@ -511,12 +516,12 @@ public class AgResultSetTest extends TestCase {
         } catch (SQLException e) {
             assertEquals(PSQLState.NUMERIC_VALUE_OUT_OF_RANGE.getState(), e.getSQLState());
         }
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
 
-        rs = stmt.executeQuery("RETURN "+  Double.toString(Double.MAX_VALUE) + " AS d");
+        rs = stmt.executeQuery("RETURN " + Double.toString(Double.MAX_VALUE) + " AS d");
         assertTrue(rs.next());
-        assertEquals(Double.MAX_VALUE, rs.getDouble(1));
-        assertTrue(!rs.next());
+        assertEquals(Double.MAX_VALUE, rs.getDouble(1), 0);
+        assertFalse(rs.next());
 
         rs.close();
         stmt.close();
@@ -527,8 +532,8 @@ public class AgResultSetTest extends TestCase {
         Statement stmt = conn.createStatement();
         ResultSet rs = stmt.executeQuery("RETURN ' 0.0' AS b");
         assertTrue(rs.next());
-        assertEquals(0.0, rs.getBigDecimal(1).doubleValue());
-        assertTrue(!rs.next());
+        assertEquals(0.0, rs.getBigDecimal(1).doubleValue(), 0);
+        assertFalse(rs.next());
 
         rs = stmt.executeQuery("RETURN '0.0x' AS b");
         assertTrue(rs.next());
@@ -538,12 +543,12 @@ public class AgResultSetTest extends TestCase {
         } catch (SQLException e) {
             assertEquals(PSQLState.NUMERIC_VALUE_OUT_OF_RANGE.getState(), e.getSQLState());
         }
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
 
-        rs = stmt.executeQuery("RETURN "+  Double.toString(Double.MAX_VALUE) + " AS d");
+        rs = stmt.executeQuery("RETURN " + Double.toString(Double.MAX_VALUE) + " AS d");
         assertTrue(rs.next());
-        assertEquals(Double.MAX_VALUE, rs.getBigDecimal(1).doubleValue());
-        assertTrue(!rs.next());
+        assertEquals(Double.MAX_VALUE, rs.getBigDecimal(1).doubleValue(), 0);
+        assertFalse(rs.next());
 
         rs.close();
         stmt.close();

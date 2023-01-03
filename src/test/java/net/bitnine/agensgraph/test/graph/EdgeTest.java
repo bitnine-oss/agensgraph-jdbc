@@ -16,24 +16,25 @@
 
 package net.bitnine.agensgraph.test.graph;
 
-import junit.framework.TestCase;
 import net.bitnine.agensgraph.graph.Edge;
 import net.bitnine.agensgraph.graph.Vertex;
+import net.bitnine.agensgraph.test.AbstractAGDockerizedTest;
 import net.bitnine.agensgraph.test.TestUtil;
 import net.bitnine.agensgraph.util.Jsonb;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 
-public class EdgeTest extends TestCase {
-    private Connection conn;
+import static org.junit.Assert.*;
 
-    @Override
-    public void setUp() throws Exception {
+
+public class EdgeTest extends AbstractAGDockerizedTest {
+    private static Connection conn;
+
+    @BeforeClass
+    public static void setUp() throws Exception {
         conn = TestUtil.openDB();
         Statement stmt = conn.createStatement();
         stmt.execute("DROP GRAPH IF EXISTS t CASCADE");
@@ -42,8 +43,8 @@ public class EdgeTest extends TestCase {
         stmt.close();
     }
 
-    @Override
-    public void tearDown() throws SQLException {
+    @AfterClass
+    public static void tearDown() throws SQLException {
         Statement stmt = conn.createStatement();
         stmt.execute("DROP GRAPH t CASCADE");
         stmt.close();
@@ -58,7 +59,7 @@ public class EdgeTest extends TestCase {
 
         Vertex v0 = (Vertex) rs.getObject(1);
         Edge e = (Edge) rs.getObject(2);
-        Vertex v1  = (Vertex) rs.getObject(3);
+        Vertex v1 = (Vertex) rs.getObject(3);
 
         assertEquals("e", e.getLabel());
         assertEquals(e.getStartVertexId(), v0.getVertexId());
@@ -68,14 +69,14 @@ public class EdgeTest extends TestCase {
         assertEquals("", e.getString("s"));
         assertEquals(0, e.getInt("l"));
         assertEquals(0, e.getLong("l"));
-        assertEquals(0.0, e.getDouble("d"));
+        assertEquals(0.0, e.getDouble("d"), 0);
         assertFalse(e.getBoolean("f"));
         assertTrue(e.getBoolean("t"));
         assertTrue(e.isNull("z"));
         assertEquals(Jsonb.class, e.getArray("a").getClass());
         assertEquals(Jsonb.class, e.getObject("o").getClass());
 
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
         rs.close();
         stmt.close();
 
@@ -86,7 +87,7 @@ public class EdgeTest extends TestCase {
 
         assertEquals(1, rs.getLong(1));
 
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
         rs.close();
         pstmt.close();
     }

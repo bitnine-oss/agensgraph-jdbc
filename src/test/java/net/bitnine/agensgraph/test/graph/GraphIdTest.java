@@ -16,22 +16,23 @@
 
 package net.bitnine.agensgraph.test.graph;
 
-import junit.framework.TestCase;
 import net.bitnine.agensgraph.graph.GraphId;
+import net.bitnine.agensgraph.test.AbstractAGDockerizedTest;
 import net.bitnine.agensgraph.test.TestUtil;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 
-public class GraphIdTest extends TestCase {
-    private Connection conn;
+import static org.junit.Assert.*;
 
-    @Override
-    public void setUp() throws Exception {
+
+public class GraphIdTest extends AbstractAGDockerizedTest {
+    private static Connection conn;
+
+    @BeforeClass
+    public static void setUp() throws Exception {
         conn = TestUtil.openDB();
         Statement stmt = conn.createStatement();
         stmt.execute("DROP GRAPH IF EXISTS t CASCADE");
@@ -40,8 +41,8 @@ public class GraphIdTest extends TestCase {
         stmt.close();
     }
 
-    @Override
-    public void tearDown() throws SQLException {
+    @AfterClass
+    public static void tearDown() throws SQLException {
         Statement stmt = conn.createStatement();
         stmt.execute("DROP GRAPH t CASCADE");
         stmt.close();
@@ -56,7 +57,7 @@ public class GraphIdTest extends TestCase {
 
         GraphId gid = (GraphId) rs.getObject(1);
 
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
         rs.close();
         stmt.close();
 
@@ -71,7 +72,7 @@ public class GraphIdTest extends TestCase {
         gid = (GraphId) rs.getObject(1);
         assertEquals(gid, param);
 
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
         rs.close();
         pstmt.close();
     }

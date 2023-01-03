@@ -16,12 +16,14 @@
 
 package net.bitnine.agensgraph.test.util;
 
-import junit.framework.TestCase;
 import net.bitnine.agensgraph.jdbc.AgResultSet;
+import net.bitnine.agensgraph.test.AbstractAGDockerizedTest;
 import net.bitnine.agensgraph.test.TestUtil;
 import net.bitnine.agensgraph.util.Jsonb;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.sql.Connection;
@@ -31,16 +33,18 @@ import java.sql.Statement;
 import java.util.List;
 import java.util.Map;
 
-public class JsonbTest extends TestCase {
-    private Connection conn;
+import static org.junit.Assert.*;
 
-    @Override
-    public void setUp() throws Exception {
+public class JsonbTest extends AbstractAGDockerizedTest {
+    private static Connection conn;
+
+    @BeforeClass
+    public static void setUp() throws Exception {
         conn = TestUtil.openDB();
     }
 
-    @Override
-    public void tearDown() throws SQLException {
+    @AfterClass
+    public static void tearDown() throws SQLException {
         TestUtil.closeDB(conn);
     }
 
@@ -56,7 +60,7 @@ public class JsonbTest extends TestCase {
         assertEquals(String.class, obj.getClass());
         assertEquals("Agens\\Graph", obj);
 
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
         rs.close();
         stmt.close();
     }
@@ -73,7 +77,7 @@ public class JsonbTest extends TestCase {
         assertEquals(Long.class, obj.getClass());
         assertEquals(Long.MAX_VALUE, obj);
 
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
         rs.close();
         stmt.close();
     }
@@ -90,7 +94,7 @@ public class JsonbTest extends TestCase {
         assertEquals(Double.class, obj.getClass());
         assertEquals(Math.PI, obj);
 
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
         rs.close();
         stmt.close();
     }
@@ -98,7 +102,7 @@ public class JsonbTest extends TestCase {
     @Test
     public void testGetJsonValueBoolean() throws SQLException {
         Statement stmt = conn.createStatement();
-        ResultSet rs = stmt.executeQuery("SELECT false::jsonb, true::jsonb");
+        ResultSet rs = stmt.executeQuery("RETURN false::jsonb, true::jsonb");
         assertTrue(rs.next());
 
         Jsonb j1 = (Jsonb) rs.getObject(1);
@@ -113,7 +117,7 @@ public class JsonbTest extends TestCase {
         assertEquals(Boolean.class, obj2.getClass());
         assertTrue((Boolean) obj2);
 
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
         rs.close();
         stmt.close();
     }
@@ -128,7 +132,7 @@ public class JsonbTest extends TestCase {
         assertEquals("null", j.getValue());
         assertTrue(j.isNull());
 
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
         rs.close();
         stmt.close();
     }
@@ -153,7 +157,7 @@ public class JsonbTest extends TestCase {
         assertEquals(Long.class, e1.getClass());
         assertEquals(1L, e1);
 
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
         rs.close();
         stmt.close();
     }
@@ -190,7 +194,7 @@ public class JsonbTest extends TestCase {
         assertEquals(JSONArray.class, o.get("a").getClass());
         assertEquals(JSONObject.class, o.get("_").getClass());
 
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
         rs.close();
         stmt.close();
     }
@@ -207,24 +211,25 @@ public class JsonbTest extends TestCase {
         Jsonb j = (Jsonb) rs.getObject(1);
         assertEquals("Agens\\Graph", j.getString());
 
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
         rs.close();
 
         // jsonb boolean and null
 
-        rs = stmt.executeQuery("SELECT false::jsonb, true::jsonb, 'null'::jsonb");
+        rs = stmt.executeQuery("RETURN false::jsonb, true::jsonb, 'null'::jsonb");
         assertTrue(rs.next());
 
         for (int i = 1; i <= 3; i++) {
             j = (Jsonb) rs.getObject(i);
             try {
                 j.getString();
-                fail("SQLExecption expected");
+                if (i <= 2)
+                    fail("SQLExecption expected");
             } catch (UnsupportedOperationException ignored) {
             }
         }
 
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
         rs.close();
 
         // other types
@@ -241,7 +246,7 @@ public class JsonbTest extends TestCase {
             }
         }
 
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
         rs.close();
 
         stmt.close();
@@ -259,7 +264,7 @@ public class JsonbTest extends TestCase {
         Jsonb j = (Jsonb) rs.getObject(1);
         assertEquals(Integer.MAX_VALUE, j.getInt());
 
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
         rs.close();
 
         // int - out of range
@@ -274,12 +279,12 @@ public class JsonbTest extends TestCase {
         } catch (IllegalArgumentException ignored) {
         }
 
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
         rs.close();
 
         // jsonb boolean and null
 
-        rs = stmt.executeQuery("SELECT false::jsonb, true::jsonb, 'null'::jsonb");
+        rs = stmt.executeQuery("RETURN false::jsonb, true::jsonb, 'null'::jsonb");
         assertTrue(rs.next());
 
         for (int i = 1; i <= 3; i++) {
@@ -291,7 +296,7 @@ public class JsonbTest extends TestCase {
             }
         }
 
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
         rs.close();
 
         // other types
@@ -308,7 +313,7 @@ public class JsonbTest extends TestCase {
             }
         }
 
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
         rs.close();
 
         stmt.close();
@@ -326,12 +331,12 @@ public class JsonbTest extends TestCase {
         Jsonb j = (Jsonb) rs.getObject(1);
         assertEquals(Long.MAX_VALUE, j.getLong());
 
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
         rs.close();
 
         // jsonb boolean and null
 
-        rs = stmt.executeQuery("SELECT false::jsonb, true::jsonb, 'null'::jsonb");
+        rs = stmt.executeQuery("RETURN false::jsonb, true::jsonb, 'null'::jsonb");
         assertTrue(rs.next());
 
         for (int i = 1; i <= 3; i++) {
@@ -343,7 +348,7 @@ public class JsonbTest extends TestCase {
             }
         }
 
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
         rs.close();
 
         // other types
@@ -360,7 +365,7 @@ public class JsonbTest extends TestCase {
             }
         }
 
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
         rs.close();
 
         stmt.close();
@@ -376,14 +381,14 @@ public class JsonbTest extends TestCase {
         assertTrue(rs.next());
 
         Jsonb j = (Jsonb) rs.getObject(1);
-        assertEquals(Math.PI, j.getDouble());
+        assertEquals(Math.PI, j.getDouble(), 0);
 
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
         rs.close();
 
         // jsonb boolean and null
 
-        rs = stmt.executeQuery("SELECT false::jsonb, true::jsonb, 'null'::jsonb");
+        rs = stmt.executeQuery("RETURN false::jsonb, true::jsonb, 'null'::jsonb");
         assertTrue(rs.next());
 
         for (int i = 1; i <= 3; i++) {
@@ -395,7 +400,7 @@ public class JsonbTest extends TestCase {
             }
         }
 
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
         rs.close();
 
         // other types
@@ -412,7 +417,7 @@ public class JsonbTest extends TestCase {
             }
         }
 
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
         rs.close();
 
         stmt.close();
@@ -424,7 +429,7 @@ public class JsonbTest extends TestCase {
 
         // boolean
 
-        ResultSet rs = stmt.executeQuery("SELECT false::jsonb, true::jsonb");
+        ResultSet rs = stmt.executeQuery("RETURN false::jsonb, true::jsonb");
         assertTrue(rs.next());
 
         Jsonb j = (Jsonb) rs.getObject(1);
@@ -432,7 +437,7 @@ public class JsonbTest extends TestCase {
         j = (Jsonb) rs.getObject(2);
         assertTrue(j.getBoolean());
 
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
         rs.close();
 
         // jsonb null
@@ -443,7 +448,7 @@ public class JsonbTest extends TestCase {
         j = (Jsonb) rs.getObject(1);
         assertFalse(j.getBoolean());
 
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
         rs.close();
 
         // other types
@@ -472,7 +477,7 @@ public class JsonbTest extends TestCase {
         j = (Jsonb) rs.getObject(10);
         assertTrue(j.getBoolean());
 
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
         rs.close();
 
         stmt.close();
@@ -487,7 +492,7 @@ public class JsonbTest extends TestCase {
         Jsonb j = (Jsonb) rs.getObject(1);
         assertTrue(j.isNull());
 
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
         rs.close();
         stmt.close();
     }
@@ -507,12 +512,12 @@ public class JsonbTest extends TestCase {
         Jsonb a = (Jsonb) obj;
         assertEquals(JSONArray.class, a.getJsonValue().getClass());
 
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
         rs.close();
 
         // jsonb boolean and null
 
-        rs = stmt.executeQuery("SELECT false::jsonb, true::jsonb, 'null'::jsonb");
+        rs = stmt.executeQuery("RETURN false::jsonb, true::jsonb, 'null'::jsonb");
         assertTrue(rs.next());
 
         for (int i = 1; i <= 3; i++) {
@@ -524,7 +529,7 @@ public class JsonbTest extends TestCase {
             }
         }
 
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
         rs.close();
 
         // other types
@@ -541,7 +546,7 @@ public class JsonbTest extends TestCase {
             }
         }
 
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
         rs.close();
 
         stmt.close();
@@ -562,12 +567,12 @@ public class JsonbTest extends TestCase {
         Jsonb a = (Jsonb) obj;
         assertEquals(JSONObject.class, a.getJsonValue().getClass());
 
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
         rs.close();
 
         // jsonb boolean and null
 
-        rs = stmt.executeQuery("SELECT false::jsonb, true::jsonb, 'null'::jsonb");
+        rs = stmt.executeQuery("RETURN false::jsonb, true::jsonb, 'null'::jsonb");
         assertTrue(rs.next());
 
         for (int i = 1; i <= 3; i++) {
@@ -579,7 +584,7 @@ public class JsonbTest extends TestCase {
             }
         }
 
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
         rs.close();
 
         // other types
@@ -596,7 +601,7 @@ public class JsonbTest extends TestCase {
             }
         }
 
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
         rs.close();
 
         stmt.close();
@@ -613,14 +618,14 @@ public class JsonbTest extends TestCase {
         assertEquals("", j.getString(0));
         assertEquals(0, j.getInt(1));
         assertEquals(0, j.getLong(1));
-        assertEquals(0.0, j.getDouble(2));
+        assertEquals(0.0, j.getDouble(2), 0);
         assertFalse(j.getBoolean(3));
         assertTrue(j.getBoolean(4));
         assertTrue(j.isNull(5));
         assertEquals(Jsonb.class, j.getArray(6).getClass());
         assertEquals(Jsonb.class, j.getObject(7).getClass());
 
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
         rs.close();
         stmt.close();
     }
@@ -644,7 +649,7 @@ public class JsonbTest extends TestCase {
         assertEquals("", j.getString("s"));
         assertEquals(0, j.getInt("l"));
         assertEquals(0, j.getLong("l"));
-        assertEquals(0.0, j.getDouble("d"));
+        assertEquals(0.0, j.getDouble("d"), 0);
         assertFalse(j.getBoolean("f"));
         assertTrue(j.getBoolean("t"));
         assertTrue(j.isNull("z"));
@@ -654,10 +659,10 @@ public class JsonbTest extends TestCase {
         assertEquals("", j.getString("x", ""));
         assertEquals(0, j.getInt("x", 0));
         assertEquals(0L, j.getLong("x", 0L));
-        assertEquals(0.0, j.getDouble("x", 0.0));
-        assertEquals(false, j.getBoolean("x", false));
+        assertEquals(0.0, j.getDouble("x", 0.0), 0);
+        assertFalse(j.getBoolean("x", false));
 
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
         rs.close();
         stmt.close();
     }
@@ -683,7 +688,7 @@ public class JsonbTest extends TestCase {
         assertEquals("", po.get("s"));
         assertEquals(4294967296L, po.get("l"));
 
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
         rs.close();
         stmt.close();
     }

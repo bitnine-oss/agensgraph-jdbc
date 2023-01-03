@@ -16,12 +16,14 @@
 
 package net.bitnine.agensgraph.test.jdbc;
 
-import junit.framework.TestCase;
 import net.bitnine.agensgraph.jdbc.AgConnection;
 import net.bitnine.agensgraph.jdbc.AgPreparedStatement;
+import net.bitnine.agensgraph.test.AbstractAGDockerizedTest;
 import net.bitnine.agensgraph.test.TestUtil;
 import net.bitnine.agensgraph.util.Jsonb;
 import net.bitnine.agensgraph.util.JsonbUtil;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.math.BigDecimal;
@@ -29,11 +31,13 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-public class AgPreparedStatementTest extends TestCase {
-    private AgConnection conn;
+import static org.junit.Assert.*;
 
-    @Override
-    public void setUp() throws Exception {
+public class AgPreparedStatementTest extends AbstractAGDockerizedTest {
+    private static AgConnection conn;
+
+    @BeforeClass
+    public static void setUp() throws Exception {
         conn = TestUtil.openDB().unwrap(AgConnection.class);
         Statement stmt = conn.createStatement();
         stmt.execute("DROP GRAPH IF EXISTS t CASCADE");
@@ -43,8 +47,8 @@ public class AgPreparedStatementTest extends TestCase {
         stmt.close();
     }
 
-    @Override
-    public void tearDown() throws SQLException {
+    @AfterClass
+    public static void tearDown() throws SQLException {
         Statement stmt = conn.createStatement();
         stmt.execute("DROP GRAPH t CASCADE");
         stmt.close();
@@ -60,7 +64,7 @@ public class AgPreparedStatementTest extends TestCase {
 
         assertEquals(1, rs.getLong(1));
 
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
         rs.close();
         apstmt.close();
     }
@@ -77,7 +81,7 @@ public class AgPreparedStatementTest extends TestCase {
 
         assertEquals(1, rs.getLong(1));
 
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
         rs.close();
 
         // int
@@ -88,7 +92,7 @@ public class AgPreparedStatementTest extends TestCase {
 
         assertEquals(1, rs.getLong(1));
 
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
         rs.close();
 
         // long
@@ -99,7 +103,7 @@ public class AgPreparedStatementTest extends TestCase {
 
         assertEquals(1, rs.getLong(1));
 
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
         rs.close();
 
         apstmt.close();
@@ -118,7 +122,7 @@ public class AgPreparedStatementTest extends TestCase {
         assertEquals("7.69999981", rs.getString(1));
         assertTrue(7.69999981 != rs.getFloat(1));
 
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
         rs.close();
 
         // double
@@ -128,9 +132,9 @@ public class AgPreparedStatementTest extends TestCase {
         assertTrue(rs.next());
 
         assertEquals("7.70000000000000018", rs.getString(1));
-        assertEquals(7.70000000000000018, rs.getDouble(1));
+        assertEquals(7.70000000000000018, rs.getDouble(1), 0);
 
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
         rs.close();
 
         apstmt.close();
@@ -144,7 +148,7 @@ public class AgPreparedStatementTest extends TestCase {
 
         assertEquals(1, rs.getLong(1));
 
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
         rs.close();
         apstmt.close();
     }
@@ -158,7 +162,7 @@ public class AgPreparedStatementTest extends TestCase {
 
         assertEquals(1, rs.getLong(1));
 
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
         rs.close();
         apstmt.close();
     }
@@ -175,7 +179,7 @@ public class AgPreparedStatementTest extends TestCase {
 
         assertEquals(1, rs.getLong(1));
 
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
         rs.close();
         apstmt.close();
 
@@ -189,7 +193,7 @@ public class AgPreparedStatementTest extends TestCase {
 
         assertEquals(1, rs.getLong(1));
 
-        assertTrue(!rs.next());
+        assertFalse(rs.next());
         rs.close();
         apstmt.close();
     }

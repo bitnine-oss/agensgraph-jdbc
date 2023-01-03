@@ -16,10 +16,12 @@
 
 package net.bitnine.agensgraph.test.ds;
 
-import junit.framework.TestCase;
 import net.bitnine.agensgraph.ds.AGPoolingDataSource;
 import net.bitnine.agensgraph.graph.Vertex;
+import net.bitnine.agensgraph.test.AbstractAGDockerizedTest;
 import net.bitnine.agensgraph.test.TestUtil;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.sql.Connection;
@@ -27,23 +29,28 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
-public class AGPoolingDataSourceTest extends TestCase {
+
+public class AGPoolingDataSourceTest extends AbstractAGDockerizedTest {
     private static final String DS_NAME = "Test DataSource";
-    private AGPoolingDataSource bds;
+    private static AGPoolingDataSource bds;
     private Connection con;
 
-    @Override
-    public void setUp() throws Exception {
+    @BeforeClass
+    public static void setUp() throws Exception {
         bds = new AGPoolingDataSource();
         bds.setDataSourceName(DS_NAME);
         bds.setUrl(TestUtil.getURL());
         bds.setInitialConnections(2);
         bds.setMaxConnections(5);
+        bds.setPassword(getPassword());
+        bds.setUser(getUser());
     }
 
-    @Override
-    public void tearDown() throws Exception {
+    @AfterClass
+    public static void tearDown() throws Exception {
         bds.close();
     }
 
@@ -70,7 +77,7 @@ public class AGPoolingDataSourceTest extends TestCase {
         try {
             source.setDataSourceName(DS_NAME);
             fail("Should hava denied 2nd DataSource with same name");
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException ignored) {
         }
     }
 
