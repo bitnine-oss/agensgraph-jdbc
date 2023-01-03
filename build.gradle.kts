@@ -14,12 +14,15 @@ repositories {
 }
 
 dependencies {
-    implementation("org.postgresql:postgresql:42.2.2.jre7")
+    implementation("org.postgresql:postgresql:42.2.27.jre7")
     implementation("com.googlecode.json-simple:json-simple:1.1.1")
+    implementation("org.jetbrains:annotations-java5:23.1.0")
 
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.testcontainers:testcontainers:1.17.6")
 }
+
+
 
 group = "net.bitnine"
 version = "1.4.2"

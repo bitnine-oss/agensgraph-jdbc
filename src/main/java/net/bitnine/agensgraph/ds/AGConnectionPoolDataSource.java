@@ -19,8 +19,11 @@ package net.bitnine.agensgraph.ds;
 import net.bitnine.agensgraph.util.DriverInfo;
 import org.postgresql.PGProperty;
 import org.postgresql.ds.PGConnectionPoolDataSource;
+import org.postgresql.util.URLCoder;
 
 import java.util.Properties;
+
+import static org.postgresql.util.internal.Nullness.castNonNull;
 
 public class AGConnectionPoolDataSource extends PGConnectionPoolDataSource {
 
@@ -29,15 +32,26 @@ public class AGConnectionPoolDataSource extends PGConnectionPoolDataSource {
         return "ConnectionPoolDataSource from " + DriverInfo.DRIVER_FULL_NAME;
     }
 
-    @Override
-    public  String getUrl() {
+    public String getUrl() {
+        String[] serverNames = getServerNames();
+        int[] portNumbers = getPortNumbers();
+        String databaseName = getDatabaseName();
+
         StringBuilder url = new StringBuilder(100);
         url.append("jdbc:agensgraph://");
-        url.append(super.getServerName());
-        if (getPortNumber() != 0) {
-            url.append(":").append(super.getPortNumber());
+        for (int i = 0; i < serverNames.length; i++) {
+            if (i > 0) {
+                url.append(",");
+            }
+            url.append(serverNames[i]);
+            if (portNumbers != null && portNumbers.length >= i && portNumbers[i] != 0) {
+                url.append(":").append(portNumbers[i]);
+            }
         }
-        url.append("/").append(super.getDatabaseName());
+        url.append("/");
+        if (databaseName != null) {
+            url.append(URLCoder.encode(databaseName));
+        }
 
         StringBuilder query = new StringBuilder(100);
         Properties properties = new Properties();
@@ -54,10 +68,11 @@ public class AGConnectionPoolDataSource extends PGConnectionPoolDataSource {
                 }
                 query.append(property.getName());
                 query.append("=");
-                query.append(property.get(properties));
+                String value = castNonNull(property.get(properties));
+                query.append(URLCoder.encode(value));
             }
         }
-        if(query.length() > 0) {
+        if (query.length() > 0) {
             url.append("?");
             url.append(query);
         }

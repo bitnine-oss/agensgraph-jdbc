@@ -17,7 +17,6 @@
 package net.bitnine.agensgraph.core;
 
 public class Oid extends org.postgresql.core.Oid {
-    public static final int JSONB = 3802;
     public static final int GRAPHID_ARRAY = 7001;
     public static final int GRAPHID = 7002;
     public static final int VERTEX_ARRAY = 7011;
