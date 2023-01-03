@@ -16,7 +16,6 @@
 
 package net.bitnine.agensgraph.test.util;
 
-import junit.framework.TestCase;
 import net.bitnine.agensgraph.util.Jsonb;
 import net.bitnine.agensgraph.util.JsonbUtil;
 import org.json.simple.JSONArray;
@@ -28,7 +27,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class JsonbUtilTest extends TestCase {
+import static org.junit.Assert.*;
+
+public class JsonbUtilTest {
     @Test
     public void testArrayBuilder() {
         Jsonb j = JsonbUtil.createArrayBuilder()
@@ -80,7 +81,7 @@ public class JsonbUtilTest extends TestCase {
         assertEquals(Long.MAX_VALUE, j.getLong());
 
         j = JsonbUtil.create(Math.PI);
-        assertEquals(Math.PI, j.getDouble());
+        assertEquals(Math.PI, j.getDouble(), 0);
 
         j = JsonbUtil.create(false);
         assertFalse(j.getBoolean());
@@ -169,6 +170,6 @@ public class JsonbUtilTest extends TestCase {
         assertEquals(Long.MAX_VALUE, j.getLong());
 
         j = JsonbUtil.create(Double.toString(Double.MAX_VALUE) + " ");
-        assertEquals(Double.MAX_VALUE, j.getDouble());
+        assertEquals(Double.MAX_VALUE, j.getDouble(), 0);
     }
 }

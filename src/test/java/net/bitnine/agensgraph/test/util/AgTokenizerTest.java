@@ -16,14 +16,17 @@
 
 package net.bitnine.agensgraph.test.util;
 
-import junit.framework.TestCase;
+import net.bitnine.agensgraph.test.AbstractAGDockerizedTest;
 import net.bitnine.agensgraph.util.AgTokenizer;
 import org.junit.Test;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
 
-public class AgTokenizerTest extends TestCase {
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+
+public class AgTokenizerTest extends AbstractAGDockerizedTest {
 
     @Test
     public void testParseString() throws SQLException {
