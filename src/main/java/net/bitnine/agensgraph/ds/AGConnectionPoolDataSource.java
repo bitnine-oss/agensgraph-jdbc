@@ -1,82 +1,85 @@
 /*
- * Copyright (c) 2014-2018, Bitnine Inc.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright (c) 2004, PostgreSQL Global Development Group
+ * See the LICENSE file in the project root for more information.
+ */
+
+/*
+ * Borrowed from PostgreSQL JDBC driver
  */
 
 package net.bitnine.agensgraph.ds;
 
-import net.bitnine.agensgraph.util.DriverInfo;
-import org.postgresql.PGProperty;
-import org.postgresql.ds.PGConnectionPoolDataSource;
-import org.postgresql.util.URLCoder;
+import net.bitnine.agensgraph.ds.common.BaseDataSource;
+import org.postgresql.ds.PGPooledConnection;
 
-import java.util.Properties;
+import javax.sql.ConnectionPoolDataSource;
+import javax.sql.PooledConnection;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+import java.sql.SQLException;
 
-import static org.postgresql.util.internal.Nullness.castNonNull;
+public class AGConnectionPoolDataSource extends BaseDataSource
+        implements ConnectionPoolDataSource, Serializable {
+    private boolean defaultAutoCommit = true;
 
-public class AGConnectionPoolDataSource extends PGConnectionPoolDataSource {
-
-    @Override
+    /**
+     * Gets a description of this DataSource.
+     */
     public String getDescription() {
-        return "ConnectionPoolDataSource from " + DriverInfo.DRIVER_FULL_NAME;
+        return "ConnectionPoolDataSource from " + org.postgresql.util.DriverInfo.DRIVER_FULL_NAME;
     }
 
-    public String getUrl() {
-        String[] serverNames = getServerNames();
-        int[] portNumbers = getPortNumbers();
-        String databaseName = getDatabaseName();
+    /**
+     * Gets a connection which may be pooled by the app server or middleware implementation of
+     * DataSource.
+     *
+     * @throws java.sql.SQLException Occurs when the physical database connection cannot be
+     *         established.
+     */
+    public PooledConnection getPooledConnection() throws SQLException {
+        return new PGPooledConnection(getConnection(), defaultAutoCommit);
+    }
 
-        StringBuilder url = new StringBuilder(100);
-        url.append("jdbc:agensgraph://");
-        for (int i = 0; i < serverNames.length; i++) {
-            if (i > 0) {
-                url.append(",");
-            }
-            url.append(serverNames[i]);
-            if (portNumbers != null && portNumbers.length >= i && portNumbers[i] != 0) {
-                url.append(":").append(portNumbers[i]);
-            }
-        }
-        url.append("/");
-        if (databaseName != null) {
-            url.append(URLCoder.encode(databaseName));
-        }
+    /**
+     * Gets a connection which may be pooled by the app server or middleware implementation of
+     * DataSource.
+     *
+     * @throws java.sql.SQLException Occurs when the physical database connection cannot be
+     *         established.
+     */
+    public PooledConnection getPooledConnection(String user, String password) throws SQLException {
+        return new PGPooledConnection(getConnection(user, password), defaultAutoCommit);
+    }
 
-        StringBuilder query = new StringBuilder(100);
-        Properties properties = new Properties();
-        for (PGProperty property : PGProperty.values()) {
-            String value = super.getProperty(property);
-            if (value != null) {
-                properties.setProperty(property.getName(), value);
-            }
-        }
-        for (PGProperty property : PGProperty.values()) {
-            if (property.isPresent(properties)) {
-                if (query.length() != 0) {
-                    query.append("&");
-                }
-                query.append(property.getName());
-                query.append("=");
-                String value = castNonNull(property.get(properties));
-                query.append(URLCoder.encode(value));
-            }
-        }
-        if (query.length() > 0) {
-            url.append("?");
-            url.append(query);
-        }
+    /**
+     * Gets whether connections supplied by this pool will have autoCommit turned on by default. The
+     * default value is {@code true}, so that autoCommit will be turned on by default.
+     *
+     * @return true if connections supplied by this pool will have autoCommit
+     */
+    public boolean isDefaultAutoCommit() {
+        return defaultAutoCommit;
+    }
 
-        return url.toString();
+    /**
+     * Sets whether connections supplied by this pool will have autoCommit turned on by default. The
+     * default value is {@code true}, so that autoCommit will be turned on by default.
+     *
+     * @param defaultAutoCommit whether connections supplied by this pool will have autoCommit
+     */
+    public void setDefaultAutoCommit(boolean defaultAutoCommit) {
+        this.defaultAutoCommit = defaultAutoCommit;
+    }
+
+    private void writeObject(ObjectOutputStream out) throws IOException {
+        writeBaseObject(out);
+        out.writeBoolean(defaultAutoCommit);
+    }
+
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        readBaseObject(in);
+        defaultAutoCommit = in.readBoolean();
     }
 }
