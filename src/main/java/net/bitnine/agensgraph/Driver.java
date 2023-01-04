@@ -21,7 +21,6 @@
 package net.bitnine.agensgraph;
 
 import net.bitnine.agensgraph.jdbc.AgConnection;
-import org.jetbrains.annotations.Nullable;
 import org.postgresql.PGProperty;
 import org.postgresql.util.DriverInfo;
 import org.postgresql.util.*;
@@ -61,7 +60,7 @@ import static org.postgresql.util.internal.Nullness.castNonNull;
  */
 public class Driver implements java.sql.Driver {
 
-  private static @Nullable Driver registeredDriver;
+  private static Driver registeredDriver;
   private static final Logger PARENT_LOGGER = Logger.getLogger("org.postgresql");
   private static final Logger LOGGER = Logger.getLogger("org.postgresql.Driver");
   private static final SharedTimer SHARED_TIMER = new SharedTimer();
@@ -81,7 +80,7 @@ public class Driver implements java.sql.Driver {
 
   // Helper to retrieve default properties from classloader resource
   // properties files.
-  private @Nullable Properties defaultProperties;
+  private Properties defaultProperties;
 
   private synchronized Properties getDefaultProperties() throws IOException {
     if (defaultProperties != null) {
@@ -209,7 +208,7 @@ public class Driver implements java.sql.Driver {
    * @see java.sql.Driver#connect
    */
   @Override
-  public @Nullable Connection connect(String url, @Nullable Properties info) throws SQLException {
+  public Connection connect(String url, Properties info) throws SQLException {
     if (url == null) {
       throw new SQLException("url is null");
     }
@@ -289,7 +288,7 @@ public class Driver implements java.sql.Driver {
   }
 
   // Used to check if the handler file is the same
-  private static @Nullable String loggerHandlerFile;
+  private static String loggerHandlerFile;
 
   /**
    * <p>Setup java.util.logging.Logger using connection properties.</p>
@@ -447,8 +446,8 @@ public class Driver implements java.sql.Driver {
 
     private final String url;
     private final Properties props;
-    private @Nullable Connection result;
-    private @Nullable Throwable resultException;
+    private Connection result;
+    private Throwable resultException;
     private boolean abandoned;
   }
 
@@ -549,7 +548,7 @@ public class Driver implements java.sql.Driver {
    * @param defaults Default properties
    * @return Properties with elements added from the url
    */
-  public static @Nullable Properties parseURL(String url, @Nullable Properties defaults) {
+  public static Properties parseURL(String url, Properties defaults) {
     Properties urlProps = new Properties(defaults);
 
     String urlServer = url;
