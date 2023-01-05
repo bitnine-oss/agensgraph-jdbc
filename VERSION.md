@@ -1,9 +1,11 @@
 1.4.3 / 2023-01-05
+------------------
 * feat: Support the graph array
 * fix: Cannot convert jsonb string to number. (AG-120)
 * Upgrade PostgreSQL JDBC Driver to 42.2.27.jre7
 
 1.4.2 / 2018-01-11
+------------------
 * feat: Support `getKeys()` and `getTypedValue()`
 
 1.4.1 / 2017-12-19
