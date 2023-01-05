@@ -8,8 +8,12 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 plugins {
     java
-    `maven-publish`
     id("com.github.johnrengelman.shadow") version "7.1.2"
+
+    // Publishing
+    signing
+    `maven-publish`
+    id("io.github.gradle-nexus.publish-plugin") version "1.1.0"
 }
 
 repositories {
@@ -25,9 +29,10 @@ dependencies {
 }
 
 group = "net.bitnine"
-version = "1.4.2"
+version = "1.4.3.42_2_27.jre7"
 description = "Agensgraph JDBC"
 java.sourceCompatibility = JavaVersion.VERSION_1_7
+val githubUrl = "github.com/bitnine-oss/agensgraph-jdbc"
 
 java {
     withSourcesJar()
@@ -57,5 +62,80 @@ tasks.withType<ShadowJar> {
         exclude(dependency("junit:junit"))
         exclude(dependency("org.testcontainers:testcontainers"))
         exclude(dependency("org.hamcrest:hamcrest-core"))
+    }
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("release") {
+            from(components["java"])
+
+            pom {
+                name.set(project.name)
+                description.set(project.description)
+                url.set("https://$githubUrl")
+
+                licenses {
+                    license {
+                        name.set("The Apache Software License, Version 2.0")
+                        url.set("https://www.apache.org/licenses/LICENSE-2.0.txt")
+                        distribution.set("repo")
+                    }
+                }
+
+                developers {
+                    developer {
+                        id.set("emotionbug")
+                        name.set("Alex Kwak")
+                    }
+                }
+
+                issueManagement {
+                    url.set("https://$githubUrl/issues")
+                    system.set("GitHub Issues")
+                }
+
+                scm {
+                    connection.set("scm:git@$githubUrl.git")
+                    developerConnection.set("scm:git@$githubUrl.git")
+                    url.set("https://$githubUrl")
+                }
+            }
+        }
+    }
+}
+
+/**
+ * https://docs.gradle.org/current/userguide/signing_plugin.html
+ */
+signing {
+    sign(publishing.publications)
+}
+
+/**
+ * It requires authorization.
+ *
+ * export SONATYPE_BITNINE_USER=...
+ * export SONATYPE_BITNINE_PASSWORD=...
+ */
+nexusPublishing {
+    repositories {
+        create("sonatype") {
+            try {
+                val sonaUser =
+                    providers.environmentVariable("SONATYPE_BITNINE_USER").get()
+                val sonaPassword =
+                    providers.environmentVariable("SONATYPE_BITNINE_PASSWORD")
+                        .get()
+
+                username.set(sonaUser)
+                password.set(sonaPassword)
+            } catch (ignored: Exception) {
+                /* will ignore if not exists. */
+            }
+
+            nexusUrl.set(uri("https://oss.sonatype.org/service/local/"))
+            snapshotRepositoryUrl.set(uri("https://oss.sonatype.org/content/repositories/snapshots/"))
+        }
     }
 }
