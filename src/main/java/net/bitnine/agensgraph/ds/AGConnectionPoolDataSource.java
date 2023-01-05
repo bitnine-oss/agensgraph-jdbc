@@ -28,7 +28,7 @@ public class AGConnectionPoolDataSource extends BaseDataSource
      * Gets a description of this DataSource.
      */
     public String getDescription() {
-        return "ConnectionPoolDataSource from " + org.postgresql.util.DriverInfo.DRIVER_FULL_NAME;
+        return "ConnectionPoolDataSource from " + net.bitnine.agensgraph.util.DriverInfo.DRIVER_FULL_NAME;
     }
 
     /**
@@ -36,7 +36,7 @@ public class AGConnectionPoolDataSource extends BaseDataSource
      * DataSource.
      *
      * @throws java.sql.SQLException Occurs when the physical database connection cannot be
-     *         established.
+     *                               established.
      */
     public PooledConnection getPooledConnection() throws SQLException {
         return new PGPooledConnection(getConnection(), defaultAutoCommit);
@@ -47,7 +47,7 @@ public class AGConnectionPoolDataSource extends BaseDataSource
      * DataSource.
      *
      * @throws java.sql.SQLException Occurs when the physical database connection cannot be
-     *         established.
+     *                               established.
      */
     public PooledConnection getPooledConnection(String user, String password) throws SQLException {
         return new PGPooledConnection(getConnection(user, password), defaultAutoCommit);

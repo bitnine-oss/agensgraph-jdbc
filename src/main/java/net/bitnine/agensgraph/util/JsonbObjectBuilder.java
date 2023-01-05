@@ -99,7 +99,7 @@ public class JsonbObjectBuilder {
      * Adds a name/null pair to the Jsonb object associated with this object builder where the value is null.
      * If the object contains a mapping for the specified name, this method replaces the old value with null.
      *
-     * @param name  name in the name/value pair
+     * @param name name in the name/value pair
      * @return this object builder
      */
     public JsonbObjectBuilder addNull(String name) {
@@ -111,8 +111,8 @@ public class JsonbObjectBuilder {
      * Adds a name/Jsonb pair to the Jsonb object associated with this object builder.
      * If the object contains a mapping for the specified name, this method replaces the old value with the Jsonb.
      *
-     * @param name  name in the name/value pair
-     * @param j the value is the object associated with Jsonb
+     * @param name name in the name/value pair
+     * @param j    the value is the object associated with Jsonb
      * @return this object builder
      */
     public JsonbObjectBuilder add(String name, Jsonb j) {
@@ -138,7 +138,7 @@ public class JsonbObjectBuilder {
      * Adds a name/JsonbArray pair to the Jsonb object associated with this object builder.
      * If the object contains a mapping for the specified name, this method replaces the old value with JsonbArray.
      *
-     * @param name  name in the name/value pair
+     * @param name    name in the name/value pair
      * @param builder the value is the object array with this builder
      * @return this object builder
      */
@@ -151,7 +151,7 @@ public class JsonbObjectBuilder {
      * Adds a name/JsonbObject pair to the Jsonb object associated with this object builder.
      * If the object contains a mapping for the specified name, this method replaces the old value with JsonbObject.
      *
-     * @param name  name in the name/value pair
+     * @param name    name in the name/value pair
      * @param builder the value is the object associated with this builder
      * @return this object builder
      */

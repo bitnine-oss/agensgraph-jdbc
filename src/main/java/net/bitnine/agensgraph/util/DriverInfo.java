@@ -31,7 +31,7 @@ public final class DriverInfo {
     /**
      * The driver version.
      */
-    public static final String DRIVER_VERSION = "1.4.2";
+    public static final String DRIVER_VERSION = "1.4.3";
 
     /**
      * The driver full name.
@@ -51,5 +51,5 @@ public final class DriverInfo {
     /**
      * The patch version.
      */
-    public static final int PATCH_VERSION = 2;
+    public static final int PATCH_VERSION = 3;
 }

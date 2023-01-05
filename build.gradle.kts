@@ -21,7 +21,7 @@ repositories {
 }
 
 dependencies {
-    implementation("org.postgresql:postgresql:42.2.27.jre7")
+    implementation("org.postgresql:postgresql:42.5.1")
     implementation("com.googlecode.json-simple:json-simple:1.1.1")
 
     testImplementation("junit:junit:4.13.2")
@@ -29,9 +29,9 @@ dependencies {
 }
 
 group = "net.bitnine"
-version = "1.4.3.42_2_27.jre7"
+version = "1.4.3"
 description = "Agensgraph JDBC"
-java.sourceCompatibility = JavaVersion.VERSION_1_7
+java.sourceCompatibility = JavaVersion.VERSION_1_8
 val githubUrl = "github.com/bitnine-oss/agensgraph-jdbc"
 
 java {

@@ -2,7 +2,7 @@
 ------------------
 * feat: Support the graph array
 * fix: Cannot convert jsonb string to number. (AG-120)
-* Upgrade PostgreSQL JDBC Driver to 42.2.27.jre7
+* Upgrade PostgreSQL JDBC Driver to 42.5.1(JDK8+), 42.2.27.jre7(JDK7)
 
 1.4.2 / 2018-01-11
 ------------------

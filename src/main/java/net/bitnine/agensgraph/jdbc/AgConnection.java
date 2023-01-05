@@ -41,8 +41,10 @@ import java.util.Properties;
  * This class defines connection to AgensGraph.
  */
 public class AgConnection extends PgConnection {
-    public AgConnection(HostSpec[] hostSpecs, String user, String database, Properties info, String url) throws SQLException {
-        super(hostSpecs, user, database, info, url);
+    public AgConnection(HostSpec[] hostSpecs,
+                        Properties info,
+                        String url) throws SQLException {
+        super(hostSpecs, info, url);
 
         addDataType("jsonb", Jsonb.class);
         addDataType("graphid", GraphId.class);

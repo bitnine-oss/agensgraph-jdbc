@@ -109,7 +109,11 @@ public class AgStatement implements BaseStatement {
 
     @Override
     public ResultSet getResultSet() throws SQLException {
-        return new AgResultSet(stmt.getResultSet());
+        ResultSet pgResultSet = stmt.getResultSet();
+        if (pgResultSet == null) {
+            return null;
+        }
+        return new AgResultSet(pgResultSet);
     }
 
     @Override
@@ -316,5 +320,15 @@ public class AgStatement implements BaseStatement {
     @Override
     public int getPrepareThreshold() {
         return stmt.getPrepareThreshold();
+    }
+
+    @Override
+    public void setAdaptiveFetch(boolean adaptiveFetch) {
+        stmt.setAdaptiveFetch(adaptiveFetch);
+    }
+
+    @Override
+    public boolean getAdaptiveFetch() {
+        return stmt.getAdaptiveFetch();
     }
 }

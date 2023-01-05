@@ -41,7 +41,7 @@ public class AgTokenizer {
 
         // ignore wrapping '[' and ']' characters
         int pos = 1;
-        int len = string.length() -1;
+        int len = string.length() - 1;
 
         int start = pos;
         int depth = 0;

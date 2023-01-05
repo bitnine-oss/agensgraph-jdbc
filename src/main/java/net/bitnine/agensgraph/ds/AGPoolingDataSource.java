@@ -58,411 +58,410 @@ import static org.postgresql.util.internal.Nullness.castNonNull;
  * </p>
  *
  * @author Aaron Mulder (ammulder@chariotsolutions.com)
- *
  * @deprecated Since 42.0.0, instead of this class you should use a fully featured connection pool
- *     like HikariCP, vibur-dbcp, commons-dbcp, c3p0, etc.
+ * like HikariCP, vibur-dbcp, commons-dbcp, c3p0, etc.
  */
 @Deprecated
 public class AGPoolingDataSource extends BaseDataSource implements DataSource {
-  protected static ConcurrentMap<String, AGPoolingDataSource> dataSources =
-      new ConcurrentHashMap<String, AGPoolingDataSource>();
+    protected static ConcurrentMap<String, AGPoolingDataSource> dataSources =
+            new ConcurrentHashMap<String, AGPoolingDataSource>();
 
-  public static  AGPoolingDataSource getDataSource(String name) {
-    return dataSources.get(name);
-  }
-
-  // Additional Data Source properties
-  protected  String dataSourceName; // Must be protected for subclasses to sync updates to it
-  private int initialConnections = 0;
-  private int maxConnections = 0;
-  // State variables
-  private boolean initialized = false;
-  private final Stack<PooledConnection> available = new Stack<PooledConnection>();
-  private final Stack<PooledConnection> used = new Stack<PooledConnection>();
-  private boolean isClosed;
-  private final Object lock = new Object();
-  private  AGConnectionPoolDataSource source;
-
-  /**
-   * Gets a description of this DataSource.
-   */
-  public String getDescription() {
-    return "Pooling DataSource '" + dataSourceName + " from " + org.postgresql.util.DriverInfo.DRIVER_FULL_NAME;
-  }
-
-  /**
-   * Ensures the DataSource properties are not changed after the DataSource has been used.
-   *
-   * @throws IllegalStateException The Server Name cannot be changed after the DataSource has been
-   *         used.
-   */
-  public void setServerName(String serverName) {
-    if (initialized) {
-      throw new IllegalStateException(
-          "Cannot set Data Source properties after DataSource has been used");
+    public static AGPoolingDataSource getDataSource(String name) {
+        return dataSources.get(name);
     }
-    super.setServerName(serverName);
-  }
 
-  /**
-   * Ensures the DataSource properties are not changed after the DataSource has been used.
-   *
-   * @throws IllegalStateException The Database Name cannot be changed after the DataSource has been
-   *         used.
-   */
-  public void setDatabaseName(String databaseName) {
-    if (initialized) {
-      throw new IllegalStateException(
-          "Cannot set Data Source properties after DataSource has been used");
-    }
-    super.setDatabaseName(databaseName);
-  }
+    // Additional Data Source properties
+    protected String dataSourceName; // Must be protected for subclasses to sync updates to it
+    private int initialConnections = 0;
+    private int maxConnections = 0;
+    // State variables
+    private boolean initialized = false;
+    private final Stack<PooledConnection> available = new Stack<PooledConnection>();
+    private final Stack<PooledConnection> used = new Stack<PooledConnection>();
+    private boolean isClosed;
+    private final Object lock = new Object();
+    private AGConnectionPoolDataSource source;
 
-  /**
-   * Ensures the DataSource properties are not changed after the DataSource has been used.
-   *
-   * @throws IllegalStateException The User cannot be changed after the DataSource has been used.
-   */
-  public void setUser(String user) {
-    if (initialized) {
-      throw new IllegalStateException(
-          "Cannot set Data Source properties after DataSource has been used");
-    }
-    super.setUser(user);
-  }
-
-  /**
-   * Ensures the DataSource properties are not changed after the DataSource has been used.
-   *
-   * @throws IllegalStateException The Password cannot be changed after the DataSource has been
-   *         used.
-   */
-  public void setPassword(String password) {
-    if (initialized) {
-      throw new IllegalStateException(
-          "Cannot set Data Source properties after DataSource has been used");
-    }
-    super.setPassword(password);
-  }
-
-  /**
-   * Ensures the DataSource properties are not changed after the DataSource has been used.
-   *
-   * @throws IllegalStateException The Port Number cannot be changed after the DataSource has been
-   *         used.
-   */
-  public void setPortNumber(int portNumber) {
-    if (initialized) {
-      throw new IllegalStateException(
-          "Cannot set Data Source properties after DataSource has been used");
-    }
-    super.setPortNumber(portNumber);
-  }
-
-  /**
-   * Gets the number of connections that will be created when this DataSource is initialized. If you
-   * do not call initialize explicitly, it will be initialized the first time a connection is drawn
-   * from it.
-   *
-   * @return number of connections that will be created when this DataSource is initialized
-   */
-  public int getInitialConnections() {
-    return initialConnections;
-  }
-
-  /**
-   * Sets the number of connections that will be created when this DataSource is initialized. If you
-   * do not call initialize explicitly, it will be initialized the first time a connection is drawn
-   * from it.
-   *
-   * @param initialConnections number of initial connections
-   * @throws IllegalStateException The Initial Connections cannot be changed after the DataSource
-   *         has been used.
-   */
-  public void setInitialConnections(int initialConnections) {
-    if (initialized) {
-      throw new IllegalStateException(
-          "Cannot set Data Source properties after DataSource has been used");
-    }
-    this.initialConnections = initialConnections;
-  }
-
-  /**
-   * Gets the maximum number of connections that the pool will allow. If a request comes in and this
-   * many connections are in use, the request will block until a connection is available. Note that
-   * connections for a user other than the default user will not be pooled and don't count against
-   * this limit.
-   *
-   * @return The maximum number of pooled connection allowed, or 0 for no maximum.
-   */
-  public int getMaxConnections() {
-    return maxConnections;
-  }
-
-  /**
-   * Sets the maximum number of connections that the pool will allow. If a request comes in and this
-   * many connections are in use, the request will block until a connection is available. Note that
-   * connections for a user other than the default user will not be pooled and don't count against
-   * this limit.
-   *
-   * @param maxConnections The maximum number of pooled connection to allow, or 0 for no maximum.
-   * @throws IllegalStateException The Maximum Connections cannot be changed after the DataSource
-   *         has been used.
-   */
-  public void setMaxConnections(int maxConnections) {
-    if (initialized) {
-      throw new IllegalStateException(
-          "Cannot set Data Source properties after DataSource has been used");
-    }
-    this.maxConnections = maxConnections;
-  }
-
-  /**
-   * Gets the name of this DataSource. This uniquely identifies the DataSource. You cannot use more
-   * than one DataSource in the same VM with the same name.
-   *
-   * @return name of this DataSource
-   */
-  public  String getDataSourceName() {
-    return dataSourceName;
-  }
-
-  /**
-   * Sets the name of this DataSource. This is required, and uniquely identifies the DataSource. You
-   * cannot create or use more than one DataSource in the same VM with the same name.
-   *
-   * @param dataSourceName datasource name
-   * @throws IllegalStateException The Data Source Name cannot be changed after the DataSource has
-   *         been used.
-   * @throws IllegalArgumentException Another PoolingDataSource with the same dataSourceName already
-   *         exists.
-   */
-  public void setDataSourceName(String dataSourceName) {
-    if (initialized) {
-      throw new IllegalStateException(
-          "Cannot set Data Source properties after DataSource has been used");
-    }
-    if (this.dataSourceName != null && dataSourceName != null
-        && dataSourceName.equals(this.dataSourceName)) {
-      return;
-    }
-    AGPoolingDataSource previous = dataSources.putIfAbsent(dataSourceName, this);
-    if (previous != null) {
-      throw new IllegalArgumentException(
-          "DataSource with name '" + dataSourceName + "' already exists!");
-    }
-    if (this.dataSourceName != null) {
-      dataSources.remove(this.dataSourceName);
-    }
-    this.dataSourceName = dataSourceName;
-  }
-
-  /**
-   * Initializes this DataSource. If the initialConnections is greater than zero, that number of
-   * connections will be created. After this method is called, the DataSource properties cannot be
-   * changed. If you do not call this explicitly, it will be called the first time you get a
-   * connection from the DataSource.
-   *
-   * @throws SQLException Occurs when the initialConnections is greater than zero, but the
-   *         DataSource is not able to create enough physical connections.
-   */
-  public void initialize() throws SQLException {
-    synchronized (lock) {
-      AGConnectionPoolDataSource source = createConnectionPool();
-      this.source = source;
-      try {
-        source.initializeFrom(this);
-      } catch (Exception e) {
-        throw new PSQLException(GT.tr("Failed to setup DataSource."), PSQLState.UNEXPECTED_ERROR,
-            e);
-      }
-
-      while (available.size() < initialConnections) {
-        available.push(source.getPooledConnection());
-      }
-
-      initialized = true;
-    }
-  }
-
-  protected boolean isInitialized() {
-    return initialized;
-  }
-
-  /**
-   * Creates the appropriate ConnectionPool to use for this DataSource.
-   *
-   * @return appropriate ConnectionPool to use for this DataSource
-   */
-  protected AGConnectionPoolDataSource createConnectionPool() {
-    return new AGConnectionPoolDataSource();
-  }
-
-  /**
-   * Gets a <b>non-pooled</b> connection, unless the user and password are the same as the default
-   * values for this connection pool.
-   *
-   * @return A pooled connection.
-   * @throws SQLException Occurs when no pooled connection is available, and a new physical
-   *         connection cannot be created.
-   */
-  public Connection getConnection(String user,  String password)
-      throws SQLException {
-    // If this is for the default user/password, use a pooled connection
-    if (user == null || (user.equals(getUser()) && ((password == null && getPassword() == null)
-        || (password != null && password.equals(getPassword()))))) {
-      return getConnection();
-    }
-    // Otherwise, use a non-pooled connection
-    if (!initialized) {
-      initialize();
-    }
-    return super.getConnection(user, password);
-  }
-
-  /**
-   * Gets a connection from the connection pool.
-   *
-   * @return A pooled connection.
-   * @throws SQLException Occurs when no pooled connection is available, and a new physical
-   *         connection cannot be created.
-   */
-  public Connection getConnection() throws SQLException {
-    if (!initialized) {
-      initialize();
-    }
-    return getPooledConnection();
-  }
-
-  /**
-   * Closes this DataSource, and all the pooled connections, whether in use or not.
-   */
-  public void close() {
-    synchronized (lock) {
-      isClosed = true;
-      while (!available.isEmpty()) {
-        PooledConnection pci = available.pop();
-        try {
-          pci.close();
-        } catch (SQLException ignored) {
-        }
-      }
-      while (!used.isEmpty()) {
-        PooledConnection pci = used.pop();
-        pci.removeConnectionEventListener(connectionEventListener);
-        try {
-          pci.close();
-        } catch (SQLException ignored) {
-        }
-      }
-    }
-    removeStoredDataSource();
-  }
-
-  protected void removeStoredDataSource() {
-    dataSources.remove(castNonNull(dataSourceName));
-  }
-
-  protected void addDataSource(String dataSourceName) {
-    dataSources.put(dataSourceName, this);
-  }
-
-  /**
-   * Gets a connection from the pool. Will get an available one if present, or create a new one if
-   * under the max limit. Will block if all used and a new one would exceed the max.
-   */
-  private Connection getPooledConnection() throws SQLException {
-    PooledConnection pc = null;
-    synchronized (lock) {
-      if (isClosed) {
-        throw new PSQLException(GT.tr("DataSource has been closed."),
-            PSQLState.CONNECTION_DOES_NOT_EXIST);
-      }
-      while (true) {
-        if (!available.isEmpty()) {
-          pc = available.pop();
-          used.push(pc);
-          break;
-        }
-        if (maxConnections == 0 || used.size() < maxConnections) {
-          pc = castNonNull(source).getPooledConnection();
-          used.push(pc);
-          break;
-        } else {
-          try {
-            // Wake up every second at a minimum
-            lock.wait(1000L);
-          } catch (InterruptedException ignored) {
-          }
-        }
-      }
-    }
-    pc.addConnectionEventListener(connectionEventListener);
-    return pc.getConnection();
-  }
-
-  /**
-   * Notified when a pooled connection is closed, or a fatal error occurs on a pooled connection.
-   * This is the only way connections are marked as unused.
-   */
-  private final ConnectionEventListener connectionEventListener = new ConnectionEventListener() {
-    public void connectionClosed(ConnectionEvent event) {
-      ((PooledConnection) event.getSource()).removeConnectionEventListener(this);
-      synchronized (lock) {
-        if (isClosed) {
-          return; // DataSource has been closed
-        }
-        boolean removed = used.remove(event.getSource());
-        if (removed) {
-          available.push((PooledConnection) event.getSource());
-          // There's now a new connection available
-          lock.notify();
-        } else {
-          // a connection error occurred
-        }
-      }
+    /**
+     * Gets a description of this DataSource.
+     */
+    public String getDescription() {
+        return "Pooling DataSource '" + dataSourceName + " from " + net.bitnine.agensgraph.util.DriverInfo.DRIVER_FULL_NAME;
     }
 
     /**
-     * This is only called for fatal errors, where the physical connection is useless afterward and
-     * should be removed from the pool.
+     * Ensures the DataSource properties are not changed after the DataSource has been used.
+     *
+     * @throws IllegalStateException The Server Name cannot be changed after the DataSource has been
+     *                               used.
      */
-    public void connectionErrorOccurred(ConnectionEvent event) {
-      ((PooledConnection) event.getSource()).removeConnectionEventListener(this);
-      synchronized (lock) {
-        if (isClosed) {
-          return; // DataSource has been closed
+    public void setServerName(String serverName) {
+        if (initialized) {
+            throw new IllegalStateException(
+                    "Cannot set Data Source properties after DataSource has been used");
         }
-        used.remove(event.getSource());
-        // We're now at least 1 connection under the max
-        lock.notify();
-      }
+        super.setServerName(serverName);
     }
-  };
 
-  /**
-   * Adds custom properties for this DataSource to the properties defined in the superclass.
-   */
-  public Reference getReference() throws NamingException {
-    Reference ref = super.getReference();
-    ref.add(new StringRefAddr("dataSourceName", dataSourceName));
-    if (initialConnections > 0) {
-      ref.add(new StringRefAddr("initialConnections", Integer.toString(initialConnections)));
+    /**
+     * Ensures the DataSource properties are not changed after the DataSource has been used.
+     *
+     * @throws IllegalStateException The Database Name cannot be changed after the DataSource has been
+     *                               used.
+     */
+    public void setDatabaseName(String databaseName) {
+        if (initialized) {
+            throw new IllegalStateException(
+                    "Cannot set Data Source properties after DataSource has been used");
+        }
+        super.setDatabaseName(databaseName);
     }
-    if (maxConnections > 0) {
-      ref.add(new StringRefAddr("maxConnections", Integer.toString(maxConnections)));
-    }
-    return ref;
-  }
 
-  public boolean isWrapperFor(Class<?> iface) throws SQLException {
-    return iface.isAssignableFrom(getClass());
-  }
-
-  public <T> T unwrap(Class<T> iface) throws SQLException {
-    if (iface.isAssignableFrom(getClass())) {
-      return iface.cast(this);
+    /**
+     * Ensures the DataSource properties are not changed after the DataSource has been used.
+     *
+     * @throws IllegalStateException The User cannot be changed after the DataSource has been used.
+     */
+    public void setUser(String user) {
+        if (initialized) {
+            throw new IllegalStateException(
+                    "Cannot set Data Source properties after DataSource has been used");
+        }
+        super.setUser(user);
     }
-    throw new SQLException("Cannot unwrap to " + iface.getName());
-  }
+
+    /**
+     * Ensures the DataSource properties are not changed after the DataSource has been used.
+     *
+     * @throws IllegalStateException The Password cannot be changed after the DataSource has been
+     *                               used.
+     */
+    public void setPassword(String password) {
+        if (initialized) {
+            throw new IllegalStateException(
+                    "Cannot set Data Source properties after DataSource has been used");
+        }
+        super.setPassword(password);
+    }
+
+    /**
+     * Ensures the DataSource properties are not changed after the DataSource has been used.
+     *
+     * @throws IllegalStateException The Port Number cannot be changed after the DataSource has been
+     *                               used.
+     */
+    public void setPortNumber(int portNumber) {
+        if (initialized) {
+            throw new IllegalStateException(
+                    "Cannot set Data Source properties after DataSource has been used");
+        }
+        super.setPortNumber(portNumber);
+    }
+
+    /**
+     * Gets the number of connections that will be created when this DataSource is initialized. If you
+     * do not call initialize explicitly, it will be initialized the first time a connection is drawn
+     * from it.
+     *
+     * @return number of connections that will be created when this DataSource is initialized
+     */
+    public int getInitialConnections() {
+        return initialConnections;
+    }
+
+    /**
+     * Sets the number of connections that will be created when this DataSource is initialized. If you
+     * do not call initialize explicitly, it will be initialized the first time a connection is drawn
+     * from it.
+     *
+     * @param initialConnections number of initial connections
+     * @throws IllegalStateException The Initial Connections cannot be changed after the DataSource
+     *                               has been used.
+     */
+    public void setInitialConnections(int initialConnections) {
+        if (initialized) {
+            throw new IllegalStateException(
+                    "Cannot set Data Source properties after DataSource has been used");
+        }
+        this.initialConnections = initialConnections;
+    }
+
+    /**
+     * Gets the maximum number of connections that the pool will allow. If a request comes in and this
+     * many connections are in use, the request will block until a connection is available. Note that
+     * connections for a user other than the default user will not be pooled and don't count against
+     * this limit.
+     *
+     * @return The maximum number of pooled connection allowed, or 0 for no maximum.
+     */
+    public int getMaxConnections() {
+        return maxConnections;
+    }
+
+    /**
+     * Sets the maximum number of connections that the pool will allow. If a request comes in and this
+     * many connections are in use, the request will block until a connection is available. Note that
+     * connections for a user other than the default user will not be pooled and don't count against
+     * this limit.
+     *
+     * @param maxConnections The maximum number of pooled connection to allow, or 0 for no maximum.
+     * @throws IllegalStateException The Maximum Connections cannot be changed after the DataSource
+     *                               has been used.
+     */
+    public void setMaxConnections(int maxConnections) {
+        if (initialized) {
+            throw new IllegalStateException(
+                    "Cannot set Data Source properties after DataSource has been used");
+        }
+        this.maxConnections = maxConnections;
+    }
+
+    /**
+     * Gets the name of this DataSource. This uniquely identifies the DataSource. You cannot use more
+     * than one DataSource in the same VM with the same name.
+     *
+     * @return name of this DataSource
+     */
+    public String getDataSourceName() {
+        return dataSourceName;
+    }
+
+    /**
+     * Sets the name of this DataSource. This is required, and uniquely identifies the DataSource. You
+     * cannot create or use more than one DataSource in the same VM with the same name.
+     *
+     * @param dataSourceName datasource name
+     * @throws IllegalStateException    The Data Source Name cannot be changed after the DataSource has
+     *                                  been used.
+     * @throws IllegalArgumentException Another PoolingDataSource with the same dataSourceName already
+     *                                  exists.
+     */
+    public void setDataSourceName(String dataSourceName) {
+        if (initialized) {
+            throw new IllegalStateException(
+                    "Cannot set Data Source properties after DataSource has been used");
+        }
+        if (this.dataSourceName != null && dataSourceName != null
+                && dataSourceName.equals(this.dataSourceName)) {
+            return;
+        }
+        AGPoolingDataSource previous = dataSources.putIfAbsent(dataSourceName, this);
+        if (previous != null) {
+            throw new IllegalArgumentException(
+                    "DataSource with name '" + dataSourceName + "' already exists!");
+        }
+        if (this.dataSourceName != null) {
+            dataSources.remove(this.dataSourceName);
+        }
+        this.dataSourceName = dataSourceName;
+    }
+
+    /**
+     * Initializes this DataSource. If the initialConnections is greater than zero, that number of
+     * connections will be created. After this method is called, the DataSource properties cannot be
+     * changed. If you do not call this explicitly, it will be called the first time you get a
+     * connection from the DataSource.
+     *
+     * @throws SQLException Occurs when the initialConnections is greater than zero, but the
+     *                      DataSource is not able to create enough physical connections.
+     */
+    public void initialize() throws SQLException {
+        synchronized (lock) {
+            AGConnectionPoolDataSource source = createConnectionPool();
+            this.source = source;
+            try {
+                source.initializeFrom(this);
+            } catch (Exception e) {
+                throw new PSQLException(GT.tr("Failed to setup DataSource."), PSQLState.UNEXPECTED_ERROR,
+                        e);
+            }
+
+            while (available.size() < initialConnections) {
+                available.push(source.getPooledConnection());
+            }
+
+            initialized = true;
+        }
+    }
+
+    protected boolean isInitialized() {
+        return initialized;
+    }
+
+    /**
+     * Creates the appropriate ConnectionPool to use for this DataSource.
+     *
+     * @return appropriate ConnectionPool to use for this DataSource
+     */
+    protected AGConnectionPoolDataSource createConnectionPool() {
+        return new AGConnectionPoolDataSource();
+    }
+
+    /**
+     * Gets a <b>non-pooled</b> connection, unless the user and password are the same as the default
+     * values for this connection pool.
+     *
+     * @return A pooled connection.
+     * @throws SQLException Occurs when no pooled connection is available, and a new physical
+     *                      connection cannot be created.
+     */
+    public Connection getConnection(String user, String password)
+            throws SQLException {
+        // If this is for the default user/password, use a pooled connection
+        if (user == null || (user.equals(getUser()) && ((password == null && getPassword() == null)
+                || (password != null && password.equals(getPassword()))))) {
+            return getConnection();
+        }
+        // Otherwise, use a non-pooled connection
+        if (!initialized) {
+            initialize();
+        }
+        return super.getConnection(user, password);
+    }
+
+    /**
+     * Gets a connection from the connection pool.
+     *
+     * @return A pooled connection.
+     * @throws SQLException Occurs when no pooled connection is available, and a new physical
+     *                      connection cannot be created.
+     */
+    public Connection getConnection() throws SQLException {
+        if (!initialized) {
+            initialize();
+        }
+        return getPooledConnection();
+    }
+
+    /**
+     * Closes this DataSource, and all the pooled connections, whether in use or not.
+     */
+    public void close() {
+        synchronized (lock) {
+            isClosed = true;
+            while (!available.isEmpty()) {
+                PooledConnection pci = available.pop();
+                try {
+                    pci.close();
+                } catch (SQLException ignored) {
+                }
+            }
+            while (!used.isEmpty()) {
+                PooledConnection pci = used.pop();
+                pci.removeConnectionEventListener(connectionEventListener);
+                try {
+                    pci.close();
+                } catch (SQLException ignored) {
+                }
+            }
+        }
+        removeStoredDataSource();
+    }
+
+    protected void removeStoredDataSource() {
+        dataSources.remove(castNonNull(dataSourceName));
+    }
+
+    protected void addDataSource(String dataSourceName) {
+        dataSources.put(dataSourceName, this);
+    }
+
+    /**
+     * Gets a connection from the pool. Will get an available one if present, or create a new one if
+     * under the max limit. Will block if all used and a new one would exceed the max.
+     */
+    private Connection getPooledConnection() throws SQLException {
+        PooledConnection pc = null;
+        synchronized (lock) {
+            if (isClosed) {
+                throw new PSQLException(GT.tr("DataSource has been closed."),
+                        PSQLState.CONNECTION_DOES_NOT_EXIST);
+            }
+            while (true) {
+                if (!available.isEmpty()) {
+                    pc = available.pop();
+                    used.push(pc);
+                    break;
+                }
+                if (maxConnections == 0 || used.size() < maxConnections) {
+                    pc = castNonNull(source).getPooledConnection();
+                    used.push(pc);
+                    break;
+                } else {
+                    try {
+                        // Wake up every second at a minimum
+                        lock.wait(1000L);
+                    } catch (InterruptedException ignored) {
+                    }
+                }
+            }
+        }
+        pc.addConnectionEventListener(connectionEventListener);
+        return pc.getConnection();
+    }
+
+    /**
+     * Notified when a pooled connection is closed, or a fatal error occurs on a pooled connection.
+     * This is the only way connections are marked as unused.
+     */
+    private final ConnectionEventListener connectionEventListener = new ConnectionEventListener() {
+        public void connectionClosed(ConnectionEvent event) {
+            ((PooledConnection) event.getSource()).removeConnectionEventListener(this);
+            synchronized (lock) {
+                if (isClosed) {
+                    return; // DataSource has been closed
+                }
+                boolean removed = used.remove(event.getSource());
+                if (removed) {
+                    available.push((PooledConnection) event.getSource());
+                    // There's now a new connection available
+                    lock.notify();
+                } else {
+                    // a connection error occurred
+                }
+            }
+        }
+
+        /**
+         * This is only called for fatal errors, where the physical connection is useless afterward and
+         * should be removed from the pool.
+         */
+        public void connectionErrorOccurred(ConnectionEvent event) {
+            ((PooledConnection) event.getSource()).removeConnectionEventListener(this);
+            synchronized (lock) {
+                if (isClosed) {
+                    return; // DataSource has been closed
+                }
+                used.remove(event.getSource());
+                // We're now at least 1 connection under the max
+                lock.notify();
+            }
+        }
+    };
+
+    /**
+     * Adds custom properties for this DataSource to the properties defined in the superclass.
+     */
+    public Reference getReference() throws NamingException {
+        Reference ref = super.getReference();
+        ref.add(new StringRefAddr("dataSourceName", dataSourceName));
+        if (initialConnections > 0) {
+            ref.add(new StringRefAddr("initialConnections", Integer.toString(initialConnections)));
+        }
+        if (maxConnections > 0) {
+            ref.add(new StringRefAddr("maxConnections", Integer.toString(maxConnections)));
+        }
+        return ref;
+    }
+
+    public boolean isWrapperFor(Class<?> iface) throws SQLException {
+        return iface.isAssignableFrom(getClass());
+    }
+
+    public <T> T unwrap(Class<T> iface) throws SQLException {
+        if (iface.isAssignableFrom(getClass())) {
+            return iface.cast(this);
+        }
+        throw new SQLException("Cannot unwrap to " + iface.getName());
+    }
 }

@@ -46,7 +46,7 @@ public interface JsonbObject {
     /**
      * Returns the value stored at the key.
      *
-     * @param key the given key
+     * @param key          the given key
      * @param defaultValue returned the default value if the value stored at the key is null
      * @return the string value stored at the key
      */
@@ -63,7 +63,7 @@ public interface JsonbObject {
     /**
      * Returns the value stored at the key.
      *
-     * @param key the given key
+     * @param key          the given key
      * @param defaultValue returned the default value if the value stored at the key is null
      * @return the int value stored at the key
      */
@@ -80,7 +80,7 @@ public interface JsonbObject {
     /**
      * Returns the value stored at the key.
      *
-     * @param key the given key
+     * @param key          the given key
      * @param defaultValue returned the default value if the value stored at the key is null
      * @return the long value stored at the key
      */
@@ -97,7 +97,7 @@ public interface JsonbObject {
     /**
      * Returns the value stored at the key.
      *
-     * @param key the given key
+     * @param key          the given key
      * @param defaultValue returned the default value if the value stored at the key is null
      * @return the double value stored at the key
      */
@@ -114,7 +114,7 @@ public interface JsonbObject {
     /**
      * Returns the value stored at the key.
      *
-     * @param key the given key
+     * @param key          the given key
      * @param defaultValue returned the default value if the value stored at the key is null
      * @return the boolean value stored at the key
      */

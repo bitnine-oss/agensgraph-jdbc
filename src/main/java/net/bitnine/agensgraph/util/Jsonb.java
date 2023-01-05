@@ -149,7 +149,7 @@ public class Jsonb extends PGobject implements JsonbObject, Serializable, Clonea
         try {
             Double.parseDouble(s);
             return true;
-        } catch(NumberFormatException e) {
+        } catch (NumberFormatException e) {
             return false;
         }
     }
