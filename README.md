@@ -1,10 +1,8 @@
-<img src="http://cfile26.uf.tistory.com/image/251E994857553C91236F07" />
-
 # AgensGraph JDBC Driver
 
 ## Introduction ##
 
-AgensGraph JDBC Driver is based on PostgreSQL JDBC Driver and offers additional features to handle graph data. Thus, when users develop Java applications, there is little difference between using the API of AgensGraph JDBC Driver and PostgreSQL JDBC Driver. The only difference is that AgensGraph uses Cypher query language instead of SQL and utilizes graph data as data types such as `Vertex`, `Edge` and `Path`.
+AgensGraph JDBC Driver is based on [PostgreSQL JDBC Driver](https://jdbc.postgresql.org/) and offers additional features to handle graph data. Thus, when users develop Java applications, there is little difference between using the API of AgensGraph JDBC Driver and PostgreSQL JDBC Driver. The only difference is that AgensGraph uses Cypher query language instead of SQL and utilizes graph data as data types such as `Vertex`, `Edge` and `Path`.
 
 ## Usage of Java Driver ##
 
